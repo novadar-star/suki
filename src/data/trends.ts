@@ -13,7 +13,7 @@ const ref = (
   kind: "reference_format",
   description,
   addedOn: "2026-11-11",
-  addedBy: "Suki team",
+  addedBy: "Myrtis team",
   tags,
   evidence: [],
   analysis: { origin: "curated", ...a },

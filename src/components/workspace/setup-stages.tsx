@@ -109,7 +109,7 @@ export function TrendsStage() {
     <>
       <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
         <p className="max-w-2xl text-muted">
-          Pick up to 3. For each account, Suki picks the best fit and explains why. None of these are live trend data. The label shows how much evidence each one has.
+          Pick up to 3. For each account, Myrtis picks the best fit and explains why. None of these are live trend data. The label shows how much evidence each one has.
         </p>
         <Link href="/trends/new" className="text-sm underline underline-offset-2">
           Add a reference

@@ -27,7 +27,7 @@ export async function POST(_req: Request, { params }: Ctx) {
     const browserExecutable = process.env.CHROME_PATH || null;
     const serveUrl = await bundle({ entryPoint: path.resolve("src/video/index.ts"), publicDir: path.resolve("public") });
     const composition = await selectComposition({ serveUrl, id: "Ugc", inputProps, browserExecutable });
-    const out = path.join(os.tmpdir(), `suki-${cid}-${Date.now()}.mp4`);
+    const out = path.join(os.tmpdir(), `myrtis-${cid}-${Date.now()}.mp4`);
     await renderMedia({ composition, serveUrl, codec: "h264", outputLocation: out, inputProps, browserExecutable });
     const file = await fs.readFile(out);
     await fs.unlink(out).catch(() => {});

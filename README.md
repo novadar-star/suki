@@ -1,4 +1,4 @@
-# Suki
+# Myrtis
 
 Turns one campaign into different short-form video plans for each social account, then checks that no two overlap.
 
@@ -12,7 +12,7 @@ npm run dev
 Open http://localhost:3000.
 
 It works with no setup:
-- **AI:** without a Gemini key, Suki uses saved sample answers. The full sample set is for the "Get ready with me" trend.
+- **AI:** without a Gemini key, Myrtis uses saved sample answers. The full sample set is for the "Get ready with me" trend.
 - **Saving:** without Supabase, data is saved to `.data/db.json` on your computer.
 
 The sidebar shows which mode is on.
@@ -47,7 +47,7 @@ For Supabase, run `supabase/migrations/0001_docs.sql` once in the SQL editor. Re
 
 ## How the honest parts work
 
-- **Trends:** Suki has no live trend data. A trend's label comes from a fixed rule on dated evidence: 0 items is a Reference example, 1 is Observed, 2 or more is Supported. All within 30 days. The AI never sets it.
+- **Trends:** Myrtis has no live trend data. A trend's label comes from a fixed rule on dated evidence: 0 items is a Reference example, 1 is Observed, 2 or more is Supported. All within 30 days. The AI never sets it.
 - **Portfolio check:** plain code in `src/lib/checks.ts`. It flags repeated angles, overlapping hooks, repeats of past hooks, prohibited claims, banned words, claims not in the Brand Brain, and missing disclaimers.
 - **Claims:** every concept must list the claims it uses, word for word from the Brand Brain.
 

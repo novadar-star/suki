@@ -6,7 +6,7 @@ import { storageMode } from "@/lib/db";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Suki",
+  title: "Myrtis",
   description: "Turn one campaign into different creative for every account.",
 };
 
@@ -17,7 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="mx-auto flex min-h-screen max-w-[1280px] flex-col md:flex-row">
           <aside className="flex shrink-0 flex-col gap-6 border-line p-4 md:sticky md:top-0 md:h-screen md:w-56 md:border-r md:p-6">
             <Link href="/" className="font-display text-2xl font-bold tracking-tight">
-              suki
+              myrtis
             </Link>
             <Sidebar />
             <p className="mt-auto hidden text-xs leading-relaxed text-muted md:block">
