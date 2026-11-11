@@ -1,6 +1,7 @@
 export type ClaimKind = "product_fact" | "marketing_claim";
 
 export type Claim = {
+  id: string;
   text: string;
   kind: ClaimKind;
   source: string;

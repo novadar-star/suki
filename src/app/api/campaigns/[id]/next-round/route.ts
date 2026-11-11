@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { getCampaign, saveCampaign } from "@/lib/repo";
-import { analyze } from "@/lib/campaign";
 import type { Campaign } from "@/lib/schemas";
 import { fail, notFound } from "@/lib/http";
 
@@ -12,8 +11,8 @@ export async function POST(_req: Request, { params }: Ctx) {
     const { id } = await params;
     const c = await getCampaign(id);
     if (!c) return notFound("Campaign");
-    const a = analyze(c);
-    if (!a) return NextResponse.json({ error: "Add results first." }, { status: 422 });
+    if (!c.results) return NextResponse.json({ error: "Add results first." }, { status: 422 });
+    const accepted = c.insights.filter((i) => i.status === "accepted");
     const now = new Date().toISOString();
     const sample = c.results?.source === "sample";
     const round = c.round + 1;
@@ -30,10 +29,10 @@ export async function POST(_req: Request, { params }: Ctx) {
       results: null,
       parentId: c.id,
       round,
-      learnings: [
-        ...a.learnings.map((l) => (sample ? `${l} (from sample numbers)` : l)),
-        ...a.nextTests.map((t) => `Test: ${t}`),
-      ],
+      // Only insights a person accepted are carried forward (PI-05).
+      learnings: accepted.flatMap((i) => [`${i.statement}${sample ? " (from sample numbers)" : ""}`, `Test: ${i.nextTest}`]),
+      insights: [],
+      qcOverrides: [],
     };
     return NextResponse.json(await saveCampaign(next), { status: 201 });
   } catch (e) {

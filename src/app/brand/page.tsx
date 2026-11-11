@@ -1,5 +1,6 @@
 import { brand } from "@/data/brand";
-import { Field, List, PageHeader, Panel, PanelTitle, Tag } from "@/components/ui";
+import { Field, IdList, List, PageHeader, Panel, PanelTitle, Tag } from "@/components/ui";
+import { ruleId } from "@/lib/checks";
 
 export default function BrandPage() {
   const facts = brand.claims.filter((c) => c.kind === "product_fact");
@@ -51,12 +52,12 @@ export default function BrandPage() {
         <Panel>
           <PanelTitle>Product facts</PanelTitle>
           <p className="-mt-2 mb-3 text-sm text-muted">Stated by the brand. Creative may use these as written.</p>
-          <List items={facts.map((c) => c.text)} />
+          <IdList items={facts} />
         </Panel>
         <Panel>
           <PanelTitle>Marketing claims</PanelTitle>
           <p className="-mt-2 mb-3 text-sm text-muted">The brand&apos;s own wording. Creative may use these but never strengthen them.</p>
-          <List items={marketing.map((c) => c.text)} />
+          <IdList items={marketing} />
         </Panel>
       </div>
 
@@ -68,15 +69,15 @@ export default function BrandPage() {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <h3 className="mb-2 text-sm font-semibold">Prohibited claims</h3>
-            <List items={g.prohibitedClaims} />
+            <IdList items={g.prohibitedClaims.map((text, i) => ({ id: ruleId("P", i), text }))} />
           </div>
           <div>
             <h3 className="mb-2 text-sm font-semibold">Words to avoid</h3>
-            <List items={g.avoidWords} />
+            <IdList items={g.avoidWords.map((text, i) => ({ id: ruleId("W", i), text }))} />
           </div>
           <div>
             <h3 className="mb-2 text-sm font-semibold">Required disclaimers</h3>
-            <List items={g.disclaimers} />
+            <IdList items={g.disclaimers.map((text, i) => ({ id: ruleId("D", i), text }))} />
           </div>
           <div>
             <h3 className="mb-2 text-sm font-semibold">Restrictions</h3>

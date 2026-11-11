@@ -3,6 +3,7 @@ import { brand } from "@/data/brand";
 import { getCampaign, getTrends } from "@/lib/repo";
 import { angleLabel, objectiveTypeInfo } from "@/lib/schemas";
 import { notFound } from "@/lib/http";
+import { assetId } from "@/lib/campaign";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -36,11 +37,12 @@ export async function GET(_req: Request, { params }: Ctx) {
         "",
         `### ${k.title}`,
         "",
+        `- Asset ID: ${assetId(c, k.id)} (tag this on the published post or ad so results can be matched)`,
         `- Hook: "${k.hook}"`,
         `- Angle: ${angleLabel[k.angleType]}. ${k.angle}`,
         `- Format: ${k.format}`,
         `- Trend: ${t?.title ?? k.trendId}`,
-        `- Claims used: ${k.claimsUsed.join("; ") || "None"}`,
+        `- Claims used: ${k.claimsUsed.map((t) => `${brand.claims.find((x) => x.text.toLowerCase() === t.toLowerCase())?.id ?? "NOT IN BRAND BRAIN"} "${t}"`).join("; ") || "None"}`,
         "",
         "| Scene | Visual | Voiceover | On-screen text |",
         "|---|---|---|---|",

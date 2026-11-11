@@ -22,6 +22,8 @@ export async function POST(req: Request) {
       report: null,
       signedOffAt: null,
       results: null,
+      insights: [],
+      qcOverrides: [],
       round: 1,
       learnings: [],
     };

@@ -128,6 +128,24 @@ export type Finding = {
   conceptIds: string[];
   message: string;
   suggestion: string;
+  // The rule that fired, e.g. "Brand Brain P-02: prohibited claim".
+  rule: string;
+  // The line that broke the rule, with the offending words.
+  excerpt?: { text: string; matches: string[] };
+};
+
+export type QcOverride = { findingId: string; reason: string; by: string; at: string };
+
+export type InsightDimension = "account" | "angle" | "format";
+export type Insight = {
+  id: string;
+  dimension: InsightDimension;
+  statement: string;
+  nextTest: string;
+  groups: { label: string; n: number; mean: number }[];
+  sampleSize: number;
+  status: "draft" | "accepted" | "dismissed";
+  decidedAt?: string;
 };
 
 export type Report = {
@@ -204,6 +222,8 @@ export type Campaign = {
   report: Report | null;
   signedOffAt: string | null;
   results: Results | null;
+  insights: Insight[];
+  qcOverrides: QcOverride[];
   // Set when this campaign is a later round of another one.
   parentId?: string;
   round: number;
@@ -246,6 +266,16 @@ export const newTrendIn = z.object({
     .transform((u) => u || undefined),
   description: z.string().trim().min(40, "Describe the video in at least a few sentences").max(2000),
   observedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+});
+
+export const overrideIn = z.object({
+  findingId: z.string().max(200),
+  reason: z.string().trim().min(5, "Write a short reason").max(300),
+});
+
+export const insightDecisionIn = z.object({
+  id: z.string().max(200),
+  status: z.enum(["draft", "accepted", "dismissed"]),
 });
 
 export const evidenceIn = z.object({

@@ -8,6 +8,8 @@ import { angleLabel, type Concept } from "@/lib/schemas";
 import { Button, inputClass } from "../button";
 import { Tag } from "../ui";
 import { useWorkspace } from "./workspace";
+import { assetId } from "@/lib/campaign";
+import { brand } from "@/data/brand";
 import { VideoPreview } from "./video-preview";
 
 export function ContentStage() {
@@ -95,6 +97,7 @@ function ConceptCard({ c, color, onOpen }: { c: Concept; color: string; onOpen: 
           {c.status !== "draft" && <Tag tone={c.status === "approved" ? "ink" : "accent"}>{c.status === "approved" ? "Approved" : "Rejected"}</Tag>}
         </div>
         <p className="mt-3 font-display text-xl font-semibold leading-snug">&ldquo;{c.hook}&rdquo;</p>
+        <code className="mt-1 block font-mono text-[11px] text-muted">{assetId(campaign, c.id)}</code>
         <p className="mt-2 text-sm text-muted">
           {c.title}. {c.differentiation}
         </p>
@@ -198,7 +201,23 @@ function ConceptDialog({ c, onClose }: { c: Concept; onClose: () => void }) {
           </div>
           <div>
             <dt className="text-sm text-muted">Claims used</dt>
-            <dd>{c.claimsUsed.length ? c.claimsUsed.join("; ") : "None"}</dd>
+            <dd>
+              {c.claimsUsed.length ? (
+                <ul className="space-y-1">
+                  {c.claimsUsed.map((t) => {
+                    const id = brand.claims.find((x) => x.text.toLowerCase() === t.toLowerCase())?.id;
+                    return (
+                      <li key={t} className="flex gap-2">
+                        <code className={`shrink-0 font-mono text-xs ${id ? "text-ink" : "text-accent"}`}>{id ?? "Not in Brand Brain"}</code>
+                        <span>{t}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                "None"
+              )}
+            </dd>
           </div>
         </dl>
 

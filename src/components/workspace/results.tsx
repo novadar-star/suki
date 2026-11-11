@@ -1,16 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import clsx from "clsx";
-import { ArrowRight, FlaskConical } from "lucide-react";
+import { FlaskConical } from "lucide-react";
 import { accounts } from "@/data/accounts";
-import { api } from "@/lib/client";
-import { analyze, deliverables, sampleRows } from "@/lib/campaign";
-import { angleLabel, objectiveTypeInfo, type Campaign, type ResultRow } from "@/lib/schemas";
-import { Button, ErrorNote, inputClass } from "../button";
-import { Tag } from "../ui";
+import { assetId, deliverables, sampleRows } from "@/lib/campaign";
+import { angleLabel, type Campaign, type ResultRow } from "@/lib/schemas";
+import { Button, inputClass } from "../button";
+import { Insights } from "./insights";
 import { useWorkspace } from "./workspace";
 
 type Col = { key: keyof Omit<ResultRow, "conceptId">; label: string };
@@ -77,7 +75,7 @@ function ResultsForm({ onDone }: { onDone: () => void }) {
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-2xl">
           <p className="text-muted">
-            Enter what each posted deliverable actually did. The Analyst ranks them on{" "}
+            Enter what each posted deliverable did, matched by its Asset ID. The Analyst ranks them on{" "}
             <strong className="font-medium text-ink">{campaign.objectiveType === "paid" ? "return on ad spend" : "watch time, saves and shares"}</strong> and
             suggests what to test next. Suki has no platform connection, so numbers are typed in.
           </p>
@@ -96,7 +94,7 @@ function ResultsForm({ onDone }: { onDone: () => void }) {
 
       {source === "sample" && (
         <p className="mb-4 rounded-md bg-[#fdf1dc] px-3 py-2 text-sm text-[#8a5a00]">
-          These are made-up sample numbers for the demo, not real performance. They will be labeled as samples everywhere.
+          Demo data: made-up sample numbers, not real performance. They stay labeled as samples everywhere, including in the next round.
         </p>
       )}
 
@@ -123,6 +121,7 @@ function ResultsForm({ onDone }: { onDone: () => void }) {
                       {a?.name} · {angleLabel[k.angleType]}
                     </span>
                     <span className="font-medium">{k.title}</span>
+                    <code className="mt-0.5 block font-mono text-[11px] text-muted">{assetId(campaign, k.id)}</code>
                   </td>
                   {cols.map((c) => (
                     <td key={c.key} className="p-2">
@@ -160,100 +159,3 @@ function ResultsForm({ onDone }: { onDone: () => void }) {
   );
 }
 
-function Insights({ onEdit }: { onEdit: () => void }) {
-  const { campaign } = useWorkspace();
-  const router = useRouter();
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const a = analyze(campaign);
-  if (!a) return null;
-  const sample = campaign.results?.source === "sample";
-  const max = Math.max(...a.ranked.map((r) => r.primary), 0.0001);
-
-  async function nextRound() {
-    setBusy(true);
-    setError(null);
-    try {
-      const next = await api<Campaign>(`/api/campaigns/${campaign.id}/next-round`, "POST");
-      router.push(`/campaigns/${next.id}?stage=brief`);
-    } catch (e) {
-      setError((e as Error).message);
-      setBusy(false);
-    }
-  }
-
-  return (
-    <>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <h2 className="text-xl font-semibold">What happened</h2>
-          {sample ? <Tag tone="accent">Sample numbers, not real results</Tag> : <Tag>Entered by the team</Tag>}
-          <Tag>Ranked by {campaign.objectiveType === "paid" ? "ROAS" : "watch time + saves/shares"}</Tag>
-        </div>
-        <Button variant="quiet" onClick={onEdit}>
-          Edit numbers
-        </Button>
-      </div>
-
-      <ol className="grid gap-2">
-        {a.ranked.map((r, i) => {
-          const acc = accounts.find((x) => x.id === r.concept.accountId);
-          return (
-            <li key={r.concept.id} className="grid gap-3 rounded-xl border border-line bg-panel p-4 sm:grid-cols-[2rem_1fr_220px] sm:items-center">
-              <span className="font-display text-2xl font-bold text-muted">{i + 1}</span>
-              <div className="min-w-0">
-                <p className="flex items-center gap-1.5 text-xs text-muted">
-                  <span aria-hidden className="size-2 rounded-full" style={{ background: acc?.color }} />
-                  {acc?.name} · {angleLabel[r.concept.angleType]} · {r.concept.format}
-                </p>
-                <p className="font-medium">&ldquo;{r.concept.hook}&rdquo;</p>
-                <p className="text-sm text-muted">{r.secondary}</p>
-              </div>
-              <div>
-                <p className="text-sm font-semibold">{r.primaryLabel}</p>
-                <div className="mt-1 h-2 rounded-full bg-paper">
-                  <div className="h-2 rounded-full" style={{ width: `${Math.max(4, (r.primary / max) * 100)}%`, background: acc?.color }} />
-                </div>
-              </div>
-            </li>
-          );
-        })}
-      </ol>
-
-      <div className="mt-8 grid gap-4 lg:grid-cols-2">
-        <section className="rounded-xl border border-line bg-panel p-5">
-          <h3 className="text-lg font-semibold">What the Analyst sees</h3>
-          <ul className="mt-3 space-y-2">
-            {a.learnings.map((l) => (
-              <li key={l} className="border-l-2 border-line pl-3">
-                {l}
-              </li>
-            ))}
-          </ul>
-          <p className="mt-4 text-sm text-muted">{a.caveat}</p>
-        </section>
-        <section className="rounded-xl border border-ink bg-panel p-5">
-          <h3 className="text-lg font-semibold">Test next</h3>
-          <ol className="mt-3 list-decimal space-y-2 pl-5">
-            {a.nextTests.map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ol>
-          <div className="mt-5 flex flex-wrap items-center gap-3">
-            <Button variant="primary" busy={busy} onClick={nextRound}>
-              Start round {campaign.round + 1}
-              <ArrowRight aria-hidden className="size-4" />
-            </Button>
-            <span className="text-sm text-muted">Same accounts and references. These learnings go into the new brief.</span>
-          </div>
-          <div className="mt-3">
-            <ErrorNote message={error} />
-          </div>
-        </section>
-      </div>
-      <p className="mt-6 text-xs text-muted">
-        {objectiveTypeInfo[campaign.objectiveType].label} campaign. The ranking and suggestions come from fixed rules on these numbers, not from AI.
-      </p>
-    </>
-  );
-}

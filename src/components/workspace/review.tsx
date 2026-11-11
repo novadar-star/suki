@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import clsx from "clsx";
-import { CircleCheck } from "lucide-react";
+import { useState } from "react";
+import { CircleCheck, OctagonX, TriangleAlert } from "lucide-react";
 import { accounts } from "@/data/accounts";
 import { angleLabel, objectiveTypeInfo, type Finding } from "@/lib/schemas";
-import { deliverables } from "@/lib/campaign";
-import { Button } from "../button";
+import { assetId, deliverables } from "@/lib/campaign";
+import { Button, inputClass } from "../button";
 import { Tag } from "../ui";
 import { useWorkspace } from "./workspace";
 
@@ -28,8 +29,10 @@ const kindLabel: Record<Finding["kind"], string> = {
 export function ReviewStage() {
   const { campaign, busy, run } = useWorkspace();
   const r = campaign.report;
+  const overridden = (id: string) => campaign.qcOverrides.find((o) => o.findingId === id);
   const fixes = r?.findings.filter((f) => f.severity === "fix") ?? [];
-  const checks = r?.findings.filter((f) => f.severity === "check") ?? [];
+  const checks = r?.findings.filter((f) => f.severity === "check" && !overridden(f.id)) ?? [];
+  const done = r?.findings.filter((f) => f.severity === "check" && overridden(f.id)) ?? [];
 
   return (
     <>
@@ -56,8 +59,8 @@ export function ReviewStage() {
         <>
           <div className="mb-6 grid gap-3 sm:grid-cols-3">
             <Stat label="Concepts checked" value={`${r.conceptCount} across ${r.accountCount} accounts`} />
-            <Stat label="Must fix" value={String(fixes.length)} tone={fixes.length ? "accent" : "plain"} />
-            <Stat label="Worth a look" value={String(checks.length)} />
+            <Stat label="Blockers" hint="Must be fixed before sign-off" value={String(fixes.length)} tone={fixes.length ? "accent" : "plain"} />
+            <Stat label="Warnings" hint={done.length ? `${done.length} overridden with a reason` : "Fix, or override with a reason"} value={String(checks.length)} />
           </div>
 
           <div className="mb-8 rounded-xl border border-line bg-panel p-5">
@@ -80,10 +83,20 @@ export function ReviewStage() {
             </div>
           ) : (
             <ul className="grid gap-3">
-              {r.findings.map((f) => (
+              {[...fixes, ...checks].map((f) => (
                 <FindingRow key={f.id} f={f} />
               ))}
             </ul>
+          )}
+          {done.length > 0 && (
+            <details className="mt-6 rounded-xl border border-line bg-panel p-5">
+              <summary className="cursor-pointer font-medium">Overridden warnings ({done.length})</summary>
+              <ul className="mt-3 grid gap-3">
+                {done.map((f) => (
+                  <FindingRow key={f.id} f={f} />
+                ))}
+              </ul>
+            </details>
           )}
         </>
       )}
@@ -91,44 +104,128 @@ export function ReviewStage() {
   );
 }
 
-function Stat({ label, value, tone = "plain" }: { label: string; value: string; tone?: "plain" | "accent" }) {
+function Stat({ label, value, hint, tone = "plain" }: { label: string; value: string; hint?: string; tone?: "plain" | "accent" }) {
   return (
     <div className="rounded-xl border border-line bg-panel p-4">
       <p className="text-sm text-muted">{label}</p>
       <p className={clsx("mt-1 font-display text-2xl font-bold", tone === "accent" && "text-accent")}>{value}</p>
+      {hint && <p className="text-xs text-muted">{hint}</p>}
     </div>
+  );
+}
+
+// The offending words are marked so the reviewer sees exactly what broke the rule.
+function Excerpt({ text, matches }: { text: string; matches: string[] }) {
+  const words = matches.filter(Boolean).map((m) => m.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const parts = words.length ? text.split(new RegExp(`(${words.join("|")})`, "gi")) : [text];
+  return (
+    <blockquote className="mt-3 rounded-md border-l-4 border-line bg-paper px-3 py-2 text-[15px]">
+      {parts.map((p, i) =>
+        words.length && i % 2 === 1 ? (
+          <mark key={i} className="rounded bg-accent-soft px-0.5 font-semibold text-accent">
+            {p}
+          </mark>
+        ) : (
+          <span key={i}>{p}</span>
+        ),
+      )}
+    </blockquote>
   );
 }
 
 function FindingRow({ f }: { f: Finding }) {
   const { campaign, busy, run } = useWorkspace();
+  const [overriding, setOverriding] = useState(false);
+  const [reason, setReason] = useState("");
   // For a pair, rewrite the later concept and keep the first one.
   const target = f.conceptIds[f.conceptIds.length - 1];
   const concept = campaign.concepts.find((c) => c.id === target);
   const account = accounts.find((a) => a.id === concept?.accountId);
   const key = `fix:${f.id}`;
+  const blocker = f.severity === "fix";
+  const override = campaign.qcOverrides.find((o) => o.findingId === f.id);
+  const url = `/api/campaigns/${campaign.id}/overrides`;
 
   return (
-    <li className={clsx("rounded-xl border bg-panel p-5", f.severity === "fix" ? "border-accent/40" : "border-line")}>
+    <li className={clsx("rounded-xl border bg-panel p-5", blocker ? "border-accent/50" : "border-[#c58a1d]/40", override && "opacity-75")}>
       <div className="flex flex-wrap items-center gap-2">
-        <Tag tone={f.severity === "fix" ? "accent" : "plain"}>{f.severity === "fix" ? "Must fix" : "Worth a look"}</Tag>
+        <span
+          className={clsx(
+            "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold",
+            blocker ? "bg-accent-soft text-accent" : "bg-[#fdf1dc] text-[#8a5a00]",
+          )}
+        >
+          {blocker ? <OctagonX aria-hidden className="size-3.5" /> : <TriangleAlert aria-hidden className="size-3.5" />}
+          {blocker ? "Blocker" : override ? "Warning, overridden" : "Warning"}
+        </span>
         <span className="text-sm font-medium">{kindLabel[f.kind]}</span>
+        {concept && <code className="font-mono text-[11px] text-muted">{assetId(campaign, concept.id)}</code>}
       </div>
       <p className="mt-2">{f.message}</p>
+      {f.excerpt && <Excerpt text={f.excerpt.text} matches={f.excerpt.matches} />}
+      <p className="mt-2 text-xs text-muted">
+        Rule: <span className="text-ink">{f.rule ?? kindLabel[f.kind]}</span>
+      </p>
       <p className="mt-1 text-sm text-muted">{f.suggestion}</p>
-      {concept && (
-        <div className="mt-4 flex flex-wrap items-center gap-3">
+
+      {override ? (
+        <div className="mt-3 rounded-md bg-paper p-3 text-sm">
+          <p>
+            <span className="font-medium">Override reason:</span> {override.reason}
+          </p>
+          <p className="mt-0.5 text-xs text-muted">
+            {override.by}, {new Date(override.at).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}
+          </p>
           <Button
-            variant={f.severity === "fix" ? "primary" : "secondary"}
-            busy={busy === key}
-            onClick={() => run(key, `/api/campaigns/${campaign.id}/concepts/${target}`, "POST", { findingId: f.id })}
+            className="mt-2"
+            variant="quiet"
+            busy={busy === `undo:${f.id}`}
+            onClick={() => run(`undo:${f.id}`, `${url}?findingId=${encodeURIComponent(f.id)}`, "DELETE")}
           >
-            {busy === key ? "Rewriting" : "Rewrite this concept"}
+            Undo override
           </Button>
-          <span className="text-sm text-muted">
-            Rewrites &ldquo;{concept.title}&rdquo; for {account?.name}
-          </span>
         </div>
+      ) : overriding ? (
+        <form
+          className="mt-3 grid gap-2"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (await run(`ovr:${f.id}`, url, "POST", { findingId: f.id, reason })) setOverriding(false);
+          }}
+        >
+          <label className="grid gap-1 text-sm">
+            <span className="text-muted">Why is this fine to keep? This is logged.</span>
+            <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} minLength={5} maxLength={300} required className={inputClass} />
+          </label>
+          <div className="flex gap-2">
+            <Button type="submit" variant="primary" busy={busy === `ovr:${f.id}`} disabled={reason.trim().length < 5}>
+              Save override
+            </Button>
+            <Button type="button" variant="quiet" onClick={() => setOverriding(false)}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      ) : (
+        concept && (
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <Button
+              variant={blocker ? "primary" : "secondary"}
+              busy={busy === key}
+              onClick={() => run(key, `/api/campaigns/${campaign.id}/concepts/${target}`, "POST", { findingId: f.id })}
+            >
+              {busy === key ? "Rewriting" : "Rewrite this concept"}
+            </Button>
+            {!blocker && (
+              <Button variant="quiet" disabled={!!busy} onClick={() => setOverriding(true)}>
+                Override with reason
+              </Button>
+            )}
+            <span className="text-sm text-muted">
+              Rewrites &ldquo;{concept.title}&rdquo; for {account?.name}
+            </span>
+          </div>
+        )
       )}
     </li>
   );
@@ -157,6 +254,15 @@ function SignOff() {
             <p className="mt-1 text-sm text-muted">
               {new Date(campaign.signedOffAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}. Every approved concept passed the checks.
             </p>
+            <ul className="mt-3 grid gap-1 text-sm">
+              {approved.map((c) => (
+                <li key={c.id} className="flex flex-wrap items-baseline gap-2">
+                  <code className="font-mono text-xs">{assetId(campaign, c.id)}</code>
+                  <span>{c.title}</span>
+                  <span className="text-muted">· {accounts.find((a) => a.id === c.accountId)?.name}</span>
+                </li>
+              ))}
+            </ul>
           </div>
           <div className="flex flex-wrap gap-2">
             <a href={`${url}/export`} className="press inline-flex min-h-9 items-center rounded-md border border-line bg-panel px-3.5 text-sm font-medium hover:border-ink/30">
@@ -179,7 +285,7 @@ function SignOff() {
         <div>
           <h2 className="text-lg font-semibold">Pick the deliverables</h2>
           <p className="mt-1 max-w-xl text-sm text-muted">
-            Approve the concepts you want to produce. Sign-off unlocks when none of them has a must-fix problem. A person makes this call, not the AI.
+            Approve the concepts you want to produce. Sign-off unlocks when none of them has a blocker. A person makes this call, not the AI.
           </p>
         </div>
         <Button
@@ -193,7 +299,7 @@ function SignOff() {
       </div>
       {blocking.length > 0 && (
         <p className="mt-3 text-sm text-accent">
-          {blocking.length} approved concept{blocking.length === 1 ? " has" : "s have"} must-fix problems. Rewrite or unapprove {blocking.length === 1 ? "it" : "them"}.
+          {blocking.length} approved concept{blocking.length === 1 ? " has" : "s have"} blockers. Rewrite or unapprove {blocking.length === 1 ? "it" : "them"}.
         </p>
       )}
       <ul className="mt-4 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
@@ -224,7 +330,7 @@ function SignOff() {
                   </span>
                   <span className="mt-0.5 block text-sm font-medium leading-snug">&ldquo;{c.hook}&rdquo;</span>
                   <span className={clsx("mt-1 block text-xs", fixes ? "text-accent" : "text-[#11704f]")}>
-                    {fixes ? `${fixes} must fix` : "Passes checks"}
+                    {fixes ? `${fixes} blocker${fixes === 1 ? "" : "s"}` : "Passes checks"}
                   </span>
                 </span>
               </label>

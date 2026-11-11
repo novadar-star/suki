@@ -54,6 +54,20 @@ export function List({ items }: { items: string[] }) {
   );
 }
 
+// A list where each item carries the ID that agents and checks cite.
+export function IdList({ items }: { items: { id: string; text: string }[] }) {
+  return (
+    <ul className="space-y-1">
+      {items.map((i) => (
+        <li key={i.id} className="flex gap-2.5">
+          <code className="mt-0.5 shrink-0 font-mono text-xs text-muted">{i.id}</code>
+          {i.text}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function fmtDate(d: string) {
   return new Date(d + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }

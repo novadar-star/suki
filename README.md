@@ -38,11 +38,14 @@ For Supabase, run `supabase/migrations/0001_docs.sql` once in the SQL editor. Re
 4. Content: Make concepts. Open one to see the script, storyboard and video preview.
 5. Review & sign-off: Run portfolio check. It catches 4 problems planted in the sample answers. Press "Rewrite this concept" on each until none are left.
 6. Tick the concepts to produce, then **Sign off**. Sign-off is blocked while any ticked concept has a must-fix problem, on the page and on the server.
-7. Results: type in real numbers, or press "Fill with sample numbers" (labeled as samples everywhere). Analyze, then **Start round 2**. The learnings go into the next brief and the AI prompt.
+7. Results: each deliverable has an Asset ID (for example `LM-HA4D-DEMO-C01-S01-V1`). Type in real numbers, or press "Fill with sample numbers" (labeled as demo data everywhere). The Analyst only states a pattern when two groups each have 3 or more assets with 1,000 or more views. Otherwise it says "Not enough data" and what is missing. Sign off all nine concepts to see a pattern by account; sign off four to see only data gaps.
+8. Accept or dismiss each draft insight, then **Start round 2**. Only accepted insights go into the next brief and the AI prompt.
+
+**Reset demo** on the Campaigns page deletes everything saved and adds one organic and one paid demo campaign.
 
 Organic and paid are judged differently. Paid adds two must-fix rules: the product must show in the first two scenes, and the CTA must ask for one clear action. Organic flags hard-sell language. Results rank organic by watch time plus saves and shares, and paid by ROAS.
 
-`npx tsx scripts/check-demo.ts` and `npx tsx scripts/check-paid.ts` check the sample answers against the rules.
+`npx tsx scripts/check-demo.ts`, `scripts/check-paid.ts` and `scripts/check-analyst.ts` check the sample answers, the paid rules and the Analyst thresholds.
 
 ## Video
 
@@ -55,7 +58,8 @@ Organic and paid are judged differently. Paid adds two must-fix rules: the produ
 
 - **Trends:** Suki has no live trend data. A trend's label comes from a fixed rule on dated evidence: 0 items is a Reference example, 1 is Observed, 2 or more is Supported. All within 30 days. The AI never sets it.
 - **Portfolio check:** plain code in `src/lib/checks.ts`, including the organic and paid rules. It flags repeated angles, overlapping hooks, repeats of past hooks, prohibited claims, banned words, claims not in the Brand Brain, and missing disclaimers.
-- **Claims:** every concept must list the claims it uses, word for word from the Brand Brain.
+- **Claims:** every concept must list the claims it uses, word for word from the Brand Brain. Each claim and rule has an ID (F, C, P, W, D) that the review cites.
+- **Review:** results are Blockers or Warnings, each with the rule and the offending words highlighted. Blockers stop sign-off. A warning can be overridden with a written reason, which is logged.
 
 - **Results:** Suki has no platform connection. Numbers are typed in or are labeled samples. The ranking and "test next" list are fixed rules in `src/lib/campaign.ts`, not AI.
 

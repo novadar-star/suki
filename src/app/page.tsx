@@ -3,6 +3,7 @@ import { brand } from "@/data/brand";
 import { getCampaigns } from "@/lib/repo";
 import { fmtDate, PageHeader, Tag } from "@/components/ui";
 import { StatusPill } from "@/components/status-pill";
+import { ResetDemo } from "@/components/reset-demo";
 import { statusOf } from "@/lib/campaign";
 import { objectiveTypeInfo } from "@/lib/schemas";
 
@@ -14,9 +15,12 @@ export default async function Home() {
     <>
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <PageHeader title="Campaigns" />
-        <Link href="/campaigns/new" className="press mb-8 rounded-md bg-ink px-4 py-2 text-sm font-medium text-white hover:bg-ink/85">
-          New campaign
-        </Link>
+        <div className="mb-8 flex items-start gap-2">
+          <ResetDemo />
+          <Link href="/campaigns/new" className="press rounded-md bg-ink px-4 py-2 text-sm font-medium text-white hover:bg-ink/85">
+            New campaign
+          </Link>
+        </div>
       </div>
       {campaigns.length === 0 ? (
         <div className="rounded-xl border border-dashed border-line bg-panel p-10">

@@ -43,6 +43,19 @@ const name = (id: string) => accounts.find((a) => a.id === id)?.name ?? id;
 const conceptText = (c: Concept) =>
   [c.hook, c.angle, c.cta, ...c.scenes.flatMap((s) => [s.voiceover, s.onScreen])].join(" \n ");
 
+const lines = (c: Concept) => [c.hook, c.angle, c.cta, ...c.scenes.flatMap((s) => [s.voiceover, s.onScreen])].filter(Boolean);
+
+// The first line that breaks a rule, so the review can highlight it.
+function locate(c: Concept, pattern: RegExp) {
+  for (const text of lines(c)) {
+    const m = text.match(pattern);
+    if (m) return { text, matches: [m[0]] };
+  }
+  return undefined;
+}
+
+export const ruleId = (prefix: "P" | "W" | "D", i: number) => `${prefix}-${String(i + 1).padStart(2, "0")}`;
+
 // Words that show the product is on screen or named.
 const PRODUCT = /\b(serum|bottle|dropper|lust minerals|4d|hyaluronic)\b/i;
 const ACTION_CTA = /\b(shop|buy|get yours|order|tap|link|try it|add to cart)\b/i;
@@ -64,6 +77,7 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
           add({
             severity: "fix",
             kind: "same_angle",
+          rule: "QC-05 repetition: one angle used twice on the same account",
             conceptIds: [a.id, b.id],
             message: `"${a.title}" and "${b.title}" both use the ${angleLabel[a.angleType]} angle on ${name(accountId)}.`,
             suggestion: "Give one of them a different reason to care.",
@@ -72,6 +86,7 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
           add({
             severity: "check",
             kind: "same_format",
+          rule: "QC-05 repetition: one format used twice on the same account",
             conceptIds: [a.id, b.id],
             message: `"${a.title}" and "${b.title}" both use the ${a.format} format on ${name(accountId)}.`,
             suggestion: "Consider a different video structure for one of them.",
@@ -87,6 +102,8 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
           add({
             severity: "fix",
             kind: "history_repeat",
+          rule: `QC-05 repetition: hook overlap of ${HISTORY_LIMIT} or more with a past hook`,
+          excerpt: { text: c.hook, matches: o.shared },
             conceptIds: [c.id],
             message: `"${c.hook}" repeats a past ${name(accountId)} hook: "${h.hook}" (shared words: ${o.shared.join(", ")}).`,
             suggestion: "Write a new opening so followers don't see the same video twice.",
@@ -104,6 +121,8 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
         add({
           severity: "fix",
           kind: "cross_overlap",
+          rule: `QC-05 repetition: same angle and hook overlap of ${CROSS_LIMIT} or more across accounts`,
+          excerpt: { text: b.hook, matches: o.shared },
           conceptIds: [a.id, b.id],
           message: `${name(a.accountId)} and ${name(b.accountId)} both use a ${angleLabel[a.angleType]} angle with near-identical hooks (shared words: ${o.shared.join(", ")}).`,
           suggestion: "Make one of them specific to its own audience, for example a checklist, comparison or problem and solution.",
@@ -112,6 +131,8 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
         add({
           severity: "check",
           kind: "similar_hooks",
+          rule: `QC-05 repetition: hook overlap of ${HOOK_LIMIT} or more`,
+          excerpt: { text: b.hook, matches: o.shared },
           conceptIds: [a.id, b.id],
           message: `"${a.hook}" and "${b.hook}" open in a very similar way (shared words: ${o.shared.join(", ")}).`,
           suggestion: "Change one opening line.",
@@ -127,6 +148,8 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
         add({
           severity: "fix",
           kind: "prohibited_claim",
+          rule: `Brand Brain ${ruleId("P", brand.guidelines.prohibitedClaims.indexOf(p.claim))}: prohibited claim "${p.claim}"`,
+          excerpt: locate(c, p.pattern),
           conceptIds: [c.id],
           message: `"${c.title}" says "${m[0]}". This falls under the prohibited claim "${p.claim}".`,
           suggestion: "Remove it and use a product fact or approved marketing claim instead.",
@@ -137,6 +160,8 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
         add({
           severity: "fix",
           kind: "avoid_word",
+          rule: `Brand Brain ${ruleId("W", brand.guidelines.avoidWords.indexOf(w))}: words to avoid`,
+          excerpt: locate(c, new RegExp(`\\b${w}\\b`, "i")),
           conceptIds: [c.id],
           message: `"${c.title}" uses "${w}", which is on the brand's avoid list.`,
           suggestion: "Replace it with the brand's own wording.",
@@ -147,6 +172,8 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
         add({
           severity: "fix",
           kind: "unsupported_claim",
+          rule: "Brand Brain: claims must match an approved claim ID (F-01 to F-05, C-01 to C-04)",
+          excerpt: { text: claim, matches: [claim] },
           conceptIds: [c.id],
           message: `"${c.title}" relies on "${claim}", which is not a product fact or approved claim.`,
           suggestion: "Use only claims from the Brand Brain.",
@@ -156,6 +183,8 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
         add({
           severity: "fix",
           kind: "missing_disclaimer",
+          rule: `Brand Brain ${ruleId("D", brand.guidelines.disclaimers.indexOf(d))}: required disclaimer`,
+          excerpt: { text: c.scenes[c.scenes.length - 1].onScreen || "(no on-screen text)", matches: [] },
           conceptIds: [c.id],
           message: `"${c.title}" is missing the disclaimer "${d}".`,
           suggestion: "Add it to the on-screen text of the last scene.",
@@ -170,6 +199,8 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
         add({
           severity: "fix",
           kind: "paid_late_product",
+          rule: "Paid track (QC-03): product in the first two scenes",
+          excerpt: { text: c.scenes[0].visual, matches: [] },
           conceptIds: [c.id],
           message: `"${c.title}" does not show or name the product in the first two scenes. Paid viewers decide in about two seconds.`,
           suggestion: "Put the serum on screen in scene 1 or 2.",
@@ -178,6 +209,8 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
         add({
           severity: "fix",
           kind: "paid_weak_cta",
+          rule: "Paid track (QC-03): one clear action in the CTA",
+          excerpt: { text: c.cta, matches: [] },
           conceptIds: [c.id],
           message: `"${c.title}" ends with "${c.cta}". A paid ad needs one clear action.`,
           suggestion: "End with a direct action, for example \"Tap the link to try it\".",
@@ -188,6 +221,8 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
         add({
           severity: "check",
           kind: "organic_hard_sell",
+          rule: "Organic track (QC-03): soft CTA, not an ad",
+          excerpt: locate(c, HARD_SELL),
           conceptIds: [c.id],
           message: `"${c.title}" says "${m[0]}". Organic posts that read like ads tend to lose viewers.`,
           suggestion: "Use a soft CTA such as save, share or comment.",
