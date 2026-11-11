@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <p className="mt-auto hidden text-xs leading-relaxed text-muted md:block">
               {aiMode === "live" ? "AI: Gemini" : "AI: sample answers (no Gemini key)"}
               <br />
-              {storageMode === "supabase" ? "Saving to Supabase" : "Saving to this computer"}
+              {storageMode === "supabase" ? "Saving to Supabase" : storageMode === "temporary" ? "Temporary saving. Add Supabase to keep data." : "Saving to this computer"}
             </p>
           </aside>
           <main className="min-w-0 flex-1 p-4 md:p-10">{children}</main>

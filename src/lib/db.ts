@@ -9,10 +9,10 @@ const url = process.env.SUPABASE_URL;
 const key = process.env.SUPABASE_SECRET_KEY;
 const supabase = url && key ? createClient(url, key, { auth: { persistSession: false } }) : null;
 
-export const storageMode = supabase ? "supabase" : "file";
+// Without Supabase: a file on your computer, or temporary server storage on Vercel.
+export const storageMode = supabase ? "supabase" : process.env.VERCEL ? "temporary" : "file";
 
-// File storage for local use when Supabase is not set up.
-const FILE = path.join(process.cwd(), ".data", "db.json");
+const FILE = process.env.VERCEL ? "/tmp/suki-db.json" : path.join(process.cwd(), ".data", "db.json");
 type FileDb = Record<string, Record<string, unknown>>;
 
 async function readFile(): Promise<FileDb> {
