@@ -112,7 +112,19 @@ export type Concept = z.infer<typeof conceptSchema>;
 export type Finding = {
   id: string;
   severity: "fix" | "check";
-  kind: "same_angle" | "same_format" | "cross_overlap" | "history_repeat" | "similar_hooks" | "prohibited_claim" | "avoid_word" | "unsupported_claim" | "missing_disclaimer";
+  kind:
+    | "same_angle"
+    | "same_format"
+    | "cross_overlap"
+    | "history_repeat"
+    | "similar_hooks"
+    | "prohibited_claim"
+    | "avoid_word"
+    | "unsupported_claim"
+    | "missing_disclaimer"
+    | "paid_late_product"
+    | "paid_weak_cta"
+    | "organic_hard_sell";
   conceptIds: string[];
   message: string;
   suggestion: string;
@@ -127,12 +139,62 @@ export type Report = {
   findings: Finding[];
 };
 
+// ---------- Objective, status, results ----------
+
+export const OBJECTIVE_TYPES = ["organic", "paid"] as const;
+export type ObjectiveType = (typeof OBJECTIVE_TYPES)[number];
+export const objectiveTypeSchema = z.enum(OBJECTIVE_TYPES);
+
+export const objectiveTypeInfo: Record<ObjectiveType, { label: string; goal: string; rubric: string[] }> = {
+  organic: {
+    label: "Organic",
+    goal: "Attention: views, watch time, saves and shares.",
+    rubric: ["Hook earns the first two seconds", "Native to the account, not an ad", "Soft CTA (save, share, comment)"],
+  },
+  paid: {
+    label: "Paid",
+    goal: "Conversion: purchases and return on ad spend.",
+    rubric: ["Product on screen in the first two scenes", "One clear action in the CTA", "Benefit stated with approved claims only"],
+  },
+};
+
+export type CampaignStatus = "draft" | "in_progress" | "in_review" | "approved" | "completed";
+export const statusLabel: Record<CampaignStatus, string> = {
+  draft: "Draft",
+  in_progress: "In progress",
+  in_review: "In review",
+  approved: "Approved",
+  completed: "Completed",
+};
+
+export const resultRowSchema = z.object({
+  conceptId: z.string().max(60),
+  views: z.number().min(0).max(1e9).optional(),
+  avgWatchPct: z.number().min(0).max(100).optional(),
+  saves: z.number().min(0).max(1e9).optional(),
+  shares: z.number().min(0).max(1e9).optional(),
+  spend: z.number().min(0).max(1e9).optional(),
+  clicks: z.number().min(0).max(1e9).optional(),
+  purchases: z.number().min(0).max(1e9).optional(),
+  revenue: z.number().min(0).max(1e9).optional(),
+});
+export type ResultRow = z.infer<typeof resultRowSchema>;
+
+export const resultsIn = z.object({
+  source: z.enum(["entered", "sample"]),
+  rows: z.array(resultRowSchema).min(1).max(9),
+});
+export type Results = z.infer<typeof resultsIn> & { enteredAt: string };
+
 export type Campaign = {
   id: string;
   name: string;
   brandId: string;
+  objectiveType: ObjectiveType;
   objective: string;
+  keyMessage: string;
   targetMarket: string;
+  deadline: string;
   createdAt: string;
   updatedAt: string;
   accountIds: string[];
@@ -140,20 +202,34 @@ export type Campaign = {
   playbooks: Playbook[];
   concepts: Concept[];
   report: Report | null;
+  signedOffAt: string | null;
+  results: Results | null;
+  // Set when this campaign is a later round of another one.
+  parentId?: string;
+  round: number;
+  learnings: string[];
 };
 
 // ---------- Request bodies ----------
 
+const dateIn = z.string().regex(/^(\d{4}-\d{2}-\d{2})?$/, "Use a date");
+
 export const createCampaignIn = z.object({
   name: z.string().trim().min(1).max(120),
+  objectiveType: objectiveTypeSchema,
   objective: z.string().trim().min(1).max(500),
+  keyMessage: z.string().trim().max(300).default(""),
   targetMarket: z.string().trim().min(1).max(300),
+  deadline: dateIn.default(""),
 });
 
 export const updateCampaignIn = z.object({
   name: z.string().trim().min(1).max(120).optional(),
+  objectiveType: objectiveTypeSchema.optional(),
   objective: z.string().trim().min(1).max(500).optional(),
+  keyMessage: z.string().trim().max(300).optional(),
   targetMarket: z.string().trim().min(1).max(300).optional(),
+  deadline: dateIn.optional(),
   accountIds: z.array(z.string().max(60)).max(3).optional(),
   trendIds: z.array(z.string().max(60)).max(3).optional(),
   playbooks: z.array(playbookSchema).max(3).optional(),

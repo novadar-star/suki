@@ -32,7 +32,7 @@ export default async function TrendPage({ params }: { params: Promise<{ id: stri
         <Panel>
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <h2 className="text-lg font-semibold">How the format works</h2>
-            <Tag>{a.origin === "ai" ? "AI reading of your description. Check before use." : a.origin === "demo" ? "Sample answer (demo mode)" : "Written by the Myrtis team"}</Tag>
+            <Tag>{a.origin === "ai" ? "AI reading of your description. Check before use." : a.origin === "demo" ? "Sample answer (demo mode)" : "Written by the Suki team"}</Tag>
           </div>
           <dl className="grid gap-4 sm:grid-cols-2">
             <Field label="Hook">{a.hookPattern}</Field>

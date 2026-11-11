@@ -1,5 +1,5 @@
 // Small fetch helper for the browser. Throws the server's error message.
-export async function api<T>(path: string, method: "POST" | "PATCH", data?: unknown): Promise<T> {
+export async function api<T>(path: string, method: "POST" | "PATCH" | "DELETE", data?: unknown): Promise<T> {
   const res = await fetch(path, {
     method,
     headers: { "Content-Type": "application/json" },

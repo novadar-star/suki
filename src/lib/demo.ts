@@ -382,4 +382,26 @@ export const demoTrendAnalysis = {
   adaptationPotential: "Works for any product that sits on a shelf, counter or desk",
 };
 
+// Demo mode has one hand-written sample set. For a paid campaign it is adjusted by
+// fixed rules: product in the opening scene and a direct CTA. Still a sample answer.
+const PAID_CTA = "Tap the link to try the 4D Hyaluronic Acid Serum.";
+
+export function adaptPlaybookForPaid(p: PlaybookOut): PlaybookOut {
+  return {
+    ...p,
+    objective: `${p.objective} Drive purchases from people who already fit this audience.`,
+    hookDirection: `Show the serum in the first two seconds. ${p.hookDirection}`,
+    cta: PAID_CTA,
+  };
+}
+
+export function adaptForPaid(c: ConceptOut): ConceptOut {
+  const scenes = c.scenes.map((x) => ({ ...x }));
+  if (!/serum|bottle|dropper/i.test(`${scenes[0].visual} ${scenes[1]?.visual ?? ""}`)) scenes[0].visual = `Serum bottle in hand. ${scenes[0].visual}`;
+  const last = scenes[scenes.length - 1];
+  last.voiceover = PAID_CTA;
+  last.onScreen = `${PAID_CTA} ${DISCLAIMER}`;
+  return { ...c, objective: `${c.objective}, and drive a purchase`, cta: PAID_CTA, scenes };
+}
+
 export const knownAccountIds = accounts.map((a) => a.id);

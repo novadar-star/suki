@@ -1,6 +1,6 @@
 import { brand } from "@/data/brand";
 import { confidenceLabel, confidenceOf } from "./confidence";
-import { ANGLES, FORMATS, type Campaign, type Concept, type Finding, type Playbook } from "./schemas";
+import { ANGLES, FORMATS, objectiveTypeInfo, type Campaign, type Concept, type Finding, type Playbook } from "./schemas";
 import type { Account, Trend } from "./types";
 
 export const SYSTEM = `You are a senior creative strategist at a social media traffic studio.
@@ -29,6 +29,21 @@ AVOID WORDS: ${g.avoidWords.join(", ")}
 REQUIRED DISCLAIMERS: ${g.disclaimers.join(" ")}
 RESTRICTIONS: ${g.restrictions.join(" ")}
 BRAND TONE: ${brand.tone}`;
+}
+
+export function campaignContext(c: Campaign) {
+  const o = objectiveTypeInfo[c.objectiveType];
+  const lines = [
+    `CAMPAIGN: ${c.name}`,
+    `Type: ${o.label}. Success means ${o.goal}`,
+    `Rules for ${o.label.toLowerCase()} content: ${o.rubric.join("; ")}.`,
+    `Objective: ${c.objective}`,
+    c.keyMessage && `Key message: ${c.keyMessage}`,
+    `Target market: ${c.targetMarket}`,
+    c.learnings.length && "LEARNINGS FROM THE LAST ROUND (use them, do not quote them):",
+    ...c.learnings.map((l) => `- ${l}`),
+  ];
+  return lines.filter(Boolean).join("\n");
 }
 
 export function accountContext(a: Account) {
@@ -63,9 +78,7 @@ Product fit: ${a.productIntegration}`;
 export function playbookPrompt(c: Campaign, account: Account, trends: Trend[], others: Playbook[]) {
   return `${brandContext()}
 
-CAMPAIGN: ${c.name}
-Objective: ${c.objective}
-Target market: ${c.targetMarket}
+${campaignContext(c)}
 
 ${accountContext(account)}
 
@@ -86,7 +99,7 @@ Task: Pick the one selected trend that fits this account best and write a creati
 export function conceptsPrompt(c: Campaign, account: Account, p: Playbook, trend: Trend, otherHooks: string[]) {
   return `${brandContext()}
 
-CAMPAIGN: ${c.name}. Objective: ${c.objective}
+${campaignContext(c)}
 
 ${accountContext(account)}
 
@@ -115,7 +128,7 @@ Task: Write 3 video concepts for this account based on the playbook.
 export function regeneratePrompt(c: Campaign, account: Account, trend: Trend, current: Concept, siblings: Concept[], instruction?: string) {
   return `${brandContext()}
 
-CAMPAIGN: ${c.name}. Objective: ${c.objective}
+${campaignContext(c)}
 
 ${accountContext(account)}
 

@@ -20,6 +20,10 @@ export async function POST(req: Request) {
       playbooks: [],
       concepts: [],
       report: null,
+      signedOffAt: null,
+      results: null,
+      round: 1,
+      learnings: [],
     };
     return NextResponse.json(await saveCampaign(c), { status: 201 });
   } catch (e) {

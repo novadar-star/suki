@@ -4,7 +4,8 @@ import Link from "next/link";
 import clsx from "clsx";
 import { accounts } from "@/data/accounts";
 import { brand } from "@/data/brand";
-import { Button, inputClass } from "../button";
+import { Button } from "../button";
+import { BriefFields } from "../brief-fields";
 import { ConfidenceBadge } from "../confidence-badge";
 import { useWorkspace } from "./workspace";
 
@@ -13,30 +14,39 @@ export function BriefStage() {
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
       <form
-        className="grid max-w-xl gap-5"
+        className="grid max-w-2xl gap-5"
         onSubmit={(e) => {
           e.preventDefault();
           run("brief", `/api/campaigns/${campaign.id}`, "PATCH", Object.fromEntries(new FormData(e.currentTarget)));
         }}
       >
-        <label className="grid gap-1.5">
-          <span className="text-sm font-medium">Campaign name</span>
-          <input name="name" required maxLength={120} defaultValue={campaign.name} className={inputClass} />
-        </label>
-        <label className="grid gap-1.5">
-          <span className="text-sm font-medium">Objective</span>
-          <textarea name="objective" required maxLength={500} rows={3} defaultValue={campaign.objective} className={inputClass} />
-        </label>
-        <label className="grid gap-1.5">
-          <span className="text-sm font-medium">Target market</span>
-          <input name="targetMarket" required maxLength={300} defaultValue={campaign.targetMarket} className={inputClass} />
-        </label>
+        <BriefFields initial={campaign} />
+        {campaign.signedOffAt && <p className="text-sm text-accent">Changing the objective type reopens the signed-off deliverables.</p>}
         <div>
           <Button type="submit" busy={busy === "brief"}>
             Save brief
           </Button>
         </div>
       </form>
+      <div className="grid h-fit gap-4">
+      {campaign.learnings.length > 0 && (
+        <aside className="rounded-xl border border-ink/20 bg-panel p-5">
+          <h2 className="font-semibold">Carried over from round {campaign.round - 1}</h2>
+          <p className="mt-1 text-xs text-muted">The Strategist reads these before writing playbooks.</p>
+          <ul className="mt-3 space-y-2 text-sm">
+            {campaign.learnings.map((l) => (
+              <li key={l} className="border-l-2 border-ink/30 pl-3">
+                {l}
+              </li>
+            ))}
+          </ul>
+          {campaign.parentId && (
+            <Link href={`/campaigns/${campaign.parentId}?stage=results`} className="mt-3 inline-block text-sm underline underline-offset-2">
+              Open round {campaign.round - 1}
+            </Link>
+          )}
+        </aside>
+      )}
       <aside className="h-fit rounded-xl border border-line bg-panel p-5">
         <h2 className="font-semibold">{brand.product.name}</h2>
         <p className="mt-1 text-sm text-muted">
@@ -47,6 +57,7 @@ export function BriefStage() {
           Open Brand Brain
         </Link>
       </aside>
+      </div>
     </div>
   );
 }
@@ -109,7 +120,7 @@ export function TrendsStage() {
     <>
       <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
         <p className="max-w-2xl text-muted">
-          Pick up to 3. For each account, Myrtis picks the best fit and explains why. None of these are live trend data. The label shows how much evidence each one has.
+          Pick up to 3. For each account, Suki picks the best fit and explains why. None of these are live trend data. The label shows how much evidence each one has.
         </p>
         <Link href="/trends/new" className="text-sm underline underline-offset-2">
           Add a reference

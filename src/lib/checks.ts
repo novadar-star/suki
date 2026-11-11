@@ -1,6 +1,6 @@
 import { accounts } from "@/data/accounts";
 import { brand } from "@/data/brand";
-import { angleLabel, type Concept, type Finding, type Report } from "./schemas";
+import { angleLabel, type Concept, type Finding, type ObjectiveType, type Report } from "./schemas";
 
 // Every check here is plain code. No AI decides a finding.
 
@@ -43,7 +43,12 @@ const name = (id: string) => accounts.find((a) => a.id === id)?.name ?? id;
 const conceptText = (c: Concept) =>
   [c.hook, c.angle, c.cta, ...c.scenes.flatMap((s) => [s.voiceover, s.onScreen])].join(" \n ");
 
-export function runChecks(concepts: Concept[]): Report {
+// Words that show the product is on screen or named.
+const PRODUCT = /\b(serum|bottle|dropper|lust minerals|4d|hyaluronic)\b/i;
+const ACTION_CTA = /\b(shop|buy|get yours|order|tap|link|try it|add to cart)\b/i;
+const HARD_SELL = /\b(buy now|shop now|order now|discount|sale|% off|limited time|use code)\b/i;
+
+export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "organic"): Report {
   const live = concepts.filter((c) => c.status !== "rejected");
   const findings: Finding[] = [];
   const add = (f: Omit<Finding, "id">) => findings.push({ ...f, id: `${f.kind}:${f.conceptIds.join("+")}` });
@@ -155,6 +160,39 @@ export function runChecks(concepts: Concept[]): Report {
           message: `"${c.title}" is missing the disclaimer "${d}".`,
           suggestion: "Add it to the on-screen text of the last scene.",
         });
+  }
+
+  // Organic and paid are judged differently.
+  for (const c of live) {
+    if (objectiveType === "paid") {
+      const early = c.scenes.slice(0, 2).map((s) => `${s.visual} ${s.voiceover} ${s.onScreen}`).join(" ");
+      if (!PRODUCT.test(early))
+        add({
+          severity: "fix",
+          kind: "paid_late_product",
+          conceptIds: [c.id],
+          message: `"${c.title}" does not show or name the product in the first two scenes. Paid viewers decide in about two seconds.`,
+          suggestion: "Put the serum on screen in scene 1 or 2.",
+        });
+      if (!ACTION_CTA.test(c.cta))
+        add({
+          severity: "fix",
+          kind: "paid_weak_cta",
+          conceptIds: [c.id],
+          message: `"${c.title}" ends with "${c.cta}". A paid ad needs one clear action.`,
+          suggestion: "End with a direct action, for example \"Tap the link to try it\".",
+        });
+    } else {
+      const m = `${c.hook} ${c.cta}`.match(HARD_SELL);
+      if (m)
+        add({
+          severity: "check",
+          kind: "organic_hard_sell",
+          conceptIds: [c.id],
+          message: `"${c.title}" says "${m[0]}". Organic posts that read like ads tend to lose viewers.`,
+          suggestion: "Use a soft CTA such as save, share or comment.",
+        });
+    }
   }
 
   const count = (key: "angleType" | "format") =>

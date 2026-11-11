@@ -1,7 +1,7 @@
 import { accounts } from "@/data/accounts";
 import { brand } from "@/data/brand";
 import { getCampaign, getTrends } from "@/lib/repo";
-import { angleLabel } from "@/lib/schemas";
+import { angleLabel, objectiveTypeInfo } from "@/lib/schemas";
 import { notFound } from "@/lib/http";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -19,7 +19,11 @@ export async function GET(_req: Request, { params }: Ctx) {
     `# ${c.name}`,
     "",
     `${brand.name}, ${brand.product.name}`,
-    `Objective: ${c.objective}`,
+    `Type: ${objectiveTypeInfo[c.objectiveType].label}. ${objectiveTypeInfo[c.objectiveType].goal}`,
+    `Brief: ${c.objective}`,
+    ...(c.keyMessage ? [`Key message: ${c.keyMessage}`] : []),
+    ...(c.deadline ? [`Deadline: ${c.deadline}`] : []),
+    c.signedOffAt ? `Signed off ${new Date(c.signedOffAt).toLocaleString("en-US", { dateStyle: "medium" })}.` : "Not signed off yet.",
     `Exported ${new Date().toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}. ${approved.length ? "Approved concepts only." : "No concepts approved yet, so this includes every draft."}`,
     "",
     "Scripts are AI-assisted plans. Videos made from them must be labeled as AI-generated where required.",

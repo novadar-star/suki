@@ -17,7 +17,7 @@ export async function POST(req: Request, { params }: Ctx) {
     if (!targets.length) return NextResponse.json({ error: "Approve at least one playbook first." }, { status: 422 });
     for (const a of targets) {
       const made = await makeConcepts(c, a);
-      c = { ...c, concepts: [...c.concepts.filter((x) => x.accountId !== a), ...made], report: null };
+      c = { ...c, concepts: [...c.concepts.filter((x) => x.accountId !== a), ...made], report: null, signedOffAt: null, results: null };
       await saveCampaign(c);
     }
     return NextResponse.json(c);

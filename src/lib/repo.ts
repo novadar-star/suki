@@ -3,6 +3,7 @@ import { trends as seedTrends } from "@/data/trends";
 import { getDoc, listDocs, putDoc } from "./db";
 import type { Trend } from "./types";
 import type { Campaign } from "./schemas";
+import { normalize } from "./campaign";
 
 // Seeded trends live in code. Saved copies (with evidence) and submitted trends live in storage.
 export async function getTrends(): Promise<Trend[]> {
@@ -19,6 +20,9 @@ export async function getTrend(id: string): Promise<Trend | null> {
 
 export const saveTrend = (t: Trend) => putDoc("trend", t.id, t);
 
-export const getCampaigns = () => listDocs<Campaign>("campaign");
-export const getCampaign = (id: string) => getDoc<Campaign>("campaign", id);
+export const getCampaigns = async () => (await listDocs<Campaign>("campaign")).map(normalize);
+export const getCampaign = async (id: string) => {
+  const c = await getDoc<Campaign>("campaign", id);
+  return c ? normalize(c) : null;
+};
 export const saveCampaign = (c: Campaign) => putDoc("campaign", c.id, { ...c, updatedAt: new Date().toISOString() });

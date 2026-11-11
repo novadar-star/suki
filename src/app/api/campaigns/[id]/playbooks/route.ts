@@ -21,6 +21,8 @@ export async function POST(req: Request, { params }: Ctx) {
       c = { ...c, playbooks: [...c.playbooks.filter((x) => x.accountId !== a), p] };
       c.concepts = c.concepts.filter((x) => x.accountId !== a);
       c.report = null;
+      c.signedOffAt = null;
+      c.results = null;
       await saveCampaign(c);
     }
     return NextResponse.json(c);

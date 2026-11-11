@@ -1,7 +1,7 @@
 import "server-only";
 import { accounts } from "@/data/accounts";
 import { aiMode, generateJson } from "./ai";
-import { demoConcepts, demoPlaybook, demoRevision, demoTrendAnalysis, DEMO_TREND_SAMPLE } from "./demo";
+import { adaptForPaid, adaptPlaybookForPaid, demoConcepts, demoPlaybook, demoRevision, demoTrendAnalysis, DEMO_TREND_SAMPLE } from "./demo";
 import { SYSTEM, conceptsPrompt, findingInstruction, playbookPrompt, regeneratePrompt, trendAnalysisPrompt } from "./prompts";
 import { getTrends } from "./repo";
 import { conceptOut, conceptsOut, playbookOut, trendAnalysisOut, type Campaign, type Concept, type Playbook } from "./schemas";
@@ -30,7 +30,9 @@ export async function makePlaybook(c: Campaign, accountId: string): Promise<Play
   const out =
     aiMode === "live"
       ? await generateJson({ system: SYSTEM, prompt: playbookPrompt(c, a, trends, others), schema: playbookOut })
-      : demoPlaybook(a, trends);
+      : c.objectiveType === "paid"
+        ? adaptPlaybookForPaid(demoPlaybook(a, trends))
+        : demoPlaybook(a, trends);
   if (!trends.some((t) => t.id === out.trendId)) out.trendId = trends[0].id;
   return { ...out, accountId, status: "draft", origin: aiMode === "live" ? "ai" : "demo" };
 }
@@ -45,7 +47,7 @@ export async function makeConcepts(c: Campaign, accountId: string): Promise<Conc
   const out =
     aiMode === "live"
       ? (await generateJson({ system: SYSTEM, prompt: conceptsPrompt(c, a, p, trend, otherHooks), schema: conceptsOut })).concepts
-      : demoConcepts(a, trend);
+      : demoConcepts(a, trend).map((x) => (c.objectiveType === "paid" ? adaptForPaid(x) : x));
   return out.map((x) => ({ ...x, id: newId(), accountId, trendId: trend.id, status: "draft", origin: aiMode === "live" ? "ai" : "demo" }));
 }
 
@@ -64,7 +66,10 @@ export async function remakeConcept(c: Campaign, conceptId: string, findingId?: 
           prompt: regeneratePrompt(c, a, trend, current, siblings, finding && findingInstruction(finding)),
           schema: conceptOut,
         })
-      : demoRevision(a, trend, current.title, siblings.filter((s) => s.accountId === a.id).map((s) => s.angleType));
+      : (() => {
+          const r = demoRevision(a, trend, current.title, siblings.filter((s) => s.accountId === a.id).map((s) => s.angleType));
+          return c.objectiveType === "paid" ? adaptForPaid(r) : r;
+        })();
   return {
     ...out,
     id: current.id,

@@ -1,8 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import clsx from "clsx";
+import { CircleCheck } from "lucide-react";
 import { accounts } from "@/data/accounts";
-import { angleLabel, type Finding } from "@/lib/schemas";
+import { angleLabel, objectiveTypeInfo, type Finding } from "@/lib/schemas";
+import { deliverables } from "@/lib/campaign";
 import { Button } from "../button";
 import { Tag } from "../ui";
 import { useWorkspace } from "./workspace";
@@ -17,6 +20,9 @@ const kindLabel: Record<Finding["kind"], string> = {
   avoid_word: "Word to avoid",
   unsupported_claim: "Unsupported claim",
   missing_disclaimer: "Missing disclaimer",
+  paid_late_product: "Paid: product shows too late",
+  paid_weak_cta: "Paid: no clear action",
+  organic_hard_sell: "Organic: reads like an ad",
 };
 
 export function ReviewStage() {
@@ -29,7 +35,8 @@ export function ReviewStage() {
     <>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <p className="max-w-2xl text-muted">
-          Compares every concept with every other one and with each account&apos;s past hooks. Claims are checked against the Brand Brain. These are fixed rules, not AI scores.
+          Compares every concept with every other one and with each account&apos;s past hooks. Claims are checked against the Brand Brain, and{" "}
+          {objectiveTypeInfo[campaign.objectiveType].label.toLowerCase()} rules are applied. These are fixed rules, not AI scores.
         </p>
         <Button
           variant={r ? "secondary" : "primary"}
@@ -42,6 +49,8 @@ export function ReviewStage() {
       </div>
 
       {!campaign.concepts.length && <p className="text-accent">Make concepts first.</p>}
+
+      {r && <SignOff />}
 
       {r && (
         <>
@@ -122,5 +131,107 @@ function FindingRow({ f }: { f: Finding }) {
         </div>
       )}
     </li>
+  );
+}
+
+// A person approves concepts and signs them off as the campaign's deliverables.
+function SignOff() {
+  const { campaign, busy, run } = useWorkspace();
+  const url = `/api/campaigns/${campaign.id}`;
+  const live = campaign.concepts.filter((c) => c.status !== "rejected");
+  const approved = deliverables(campaign);
+  const fixesFor = (id: string) => campaign.report?.findings.filter((f) => f.severity === "fix" && f.conceptIds.includes(id)).length ?? 0;
+  const blocking = approved.filter((c) => fixesFor(c.id) > 0);
+  const setStatus = (id: string, status: "approved" | "draft") =>
+    run(`so:${id}`, url, "PATCH", { concepts: campaign.concepts.map((x) => (x.id === id ? { ...x, status } : x)) });
+
+  if (campaign.signedOffAt)
+    return (
+      <section className="mb-8 rounded-xl border border-[#11704f]/30 bg-[#e1f4ec]/60 p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="flex items-center gap-2 text-lg font-semibold">
+              <CircleCheck aria-hidden className="size-5 text-[#11704f]" />
+              Signed off. {approved.length} deliverable{approved.length === 1 ? "" : "s"} ready for production.
+            </h2>
+            <p className="mt-1 text-sm text-muted">
+              {new Date(campaign.signedOffAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}. Every approved concept passed the checks.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <a href={`${url}/export`} className="press inline-flex min-h-9 items-center rounded-md border border-line bg-panel px-3.5 text-sm font-medium hover:border-ink/30">
+              Export production pack
+            </a>
+            <Link href="?stage=results" scroll={false} className="press inline-flex min-h-9 items-center rounded-md bg-ink px-3.5 text-sm font-medium text-white hover:bg-ink/85">
+              Add results
+            </Link>
+            <Button variant="quiet" busy={busy === "reopen"} onClick={() => run("reopen", `${url}/signoff`, "DELETE")}>
+              Reopen
+            </Button>
+          </div>
+        </div>
+      </section>
+    );
+
+  return (
+    <section className="mb-8 rounded-xl border border-line bg-panel p-5">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold">Pick the deliverables</h2>
+          <p className="mt-1 max-w-xl text-sm text-muted">
+            Approve the concepts you want to produce. Sign-off unlocks when none of them has a must-fix problem. A person makes this call, not the AI.
+          </p>
+        </div>
+        <Button
+          variant="primary"
+          disabled={!approved.length || blocking.length > 0 || !!busy}
+          busy={busy === "signoff"}
+          onClick={() => run("signoff", `${url}/signoff`, "POST")}
+        >
+          {approved.length ? `Sign off ${approved.length} deliverable${approved.length === 1 ? "" : "s"}` : "Sign off deliverables"}
+        </Button>
+      </div>
+      {blocking.length > 0 && (
+        <p className="mt-3 text-sm text-accent">
+          {blocking.length} approved concept{blocking.length === 1 ? " has" : "s have"} must-fix problems. Rewrite or unapprove {blocking.length === 1 ? "it" : "them"}.
+        </p>
+      )}
+      <ul className="mt-4 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+        {live.map((c) => {
+          const a = accounts.find((x) => x.id === c.accountId);
+          const fixes = fixesFor(c.id);
+          const on = c.status === "approved";
+          return (
+            <li key={c.id}>
+              <label
+                className={clsx(
+                  "press flex h-full cursor-pointer gap-3 rounded-lg border p-3",
+                  on ? "border-ink" : "border-line hover:border-ink/30",
+                  busy === `so:${c.id}` && "opacity-50",
+                )}
+              >
+                <input
+                  type="checkbox"
+                  checked={on}
+                  disabled={!!busy}
+                  onChange={() => setStatus(c.id, on ? "draft" : "approved")}
+                  className="mt-1 size-4 accent-ink"
+                />
+                <span className="min-w-0">
+                  <span className="flex items-center gap-1.5 text-xs text-muted">
+                    <span aria-hidden className="size-2 rounded-full" style={{ background: a?.color }} />
+                    {a?.name} · {angleLabel[c.angleType]}
+                  </span>
+                  <span className="mt-0.5 block text-sm font-medium leading-snug">&ldquo;{c.hook}&rdquo;</span>
+                  <span className={clsx("mt-1 block text-xs", fixes ? "text-accent" : "text-[#11704f]")}>
+                    {fixes ? `${fixes} must fix` : "Passes checks"}
+                  </span>
+                </span>
+              </label>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }

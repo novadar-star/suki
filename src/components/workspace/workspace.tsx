@@ -12,6 +12,11 @@ import { AccountsStage, BriefStage, TrendsStage } from "./setup-stages";
 import { PlaybooksStage } from "./playbooks";
 import { ContentStage } from "./content";
 import { ReviewStage } from "./review";
+import { ResultsStage } from "./results";
+import { StatusPill } from "../status-pill";
+import { objectiveTypeInfo } from "@/lib/schemas";
+import { statusOf } from "@/lib/campaign";
+import { fmtDate, Tag } from "../ui";
 
 export type TrendView = Trend & { confidence: Confidence };
 
@@ -21,7 +26,8 @@ const STAGES = [
   { id: "trends", label: "Trends" },
   { id: "playbooks", label: "Playbooks" },
   { id: "content", label: "Content" },
-  { id: "review", label: "Portfolio review" },
+  { id: "review", label: "Review & sign-off" },
+  { id: "results", label: "Results" },
 ] as const;
 export type StageId = (typeof STAGES)[number]["id"];
 
@@ -30,7 +36,7 @@ type Ctx = {
   trends: TrendView[];
   busy: string | null;
   // Runs a request, saves the returned campaign, and shows any error.
-  run: (key: string, path: string, method: "POST" | "PATCH", data?: unknown) => Promise<boolean>;
+  run: (key: string, path: string, method: "POST" | "PATCH" | "DELETE", data?: unknown) => Promise<boolean>;
 };
 const WorkspaceContext = createContext<Ctx | null>(null);
 export const useWorkspace = () => useContext(WorkspaceContext)!;
@@ -48,7 +54,9 @@ function isDone(c: Campaign, id: StageId) {
     case "content":
       return c.concepts.length > 0;
     case "review":
-      return !!c.report && c.report.findings.every((f) => f.severity !== "fix");
+      return !!c.signedOffAt;
+    case "results":
+      return !!c.results;
   }
 }
 
@@ -58,7 +66,7 @@ export function Workspace({ initial, trends, stage }: { initial: Campaign; trend
   const [error, setError] = useState<string | null>(null);
   const current = STAGES.some((s) => s.id === stage) ? stage : "brief";
 
-  async function run(key: string, path: string, method: "POST" | "PATCH", data?: unknown) {
+  async function run(key: string, path: string, method: "POST" | "PATCH" | "DELETE", data?: unknown) {
     setBusy(key);
     setError(null);
     try {
@@ -82,6 +90,13 @@ export function Workspace({ initial, trends, stage }: { initial: Campaign; trend
           Campaigns
         </Link>
         <h1 className="mt-1 text-3xl font-bold">{campaign.name}</h1>
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-muted">
+          <StatusPill status={statusOf(campaign)} />
+          <Tag tone="ink">{objectiveTypeInfo[campaign.objectiveType].label}</Tag>
+          {campaign.round > 1 && <Tag>Round {campaign.round}</Tag>}
+          <span>{objectiveTypeInfo[campaign.objectiveType].goal}</span>
+          {campaign.deadline && <span>· Due {fmtDate(campaign.deadline)}</span>}
+        </div>
       </header>
 
       <nav aria-label="Campaign stages" className="mb-8 overflow-x-auto">
@@ -126,6 +141,7 @@ export function Workspace({ initial, trends, stage }: { initial: Campaign; trend
       {current === "playbooks" && <PlaybooksStage />}
       {current === "content" && <ContentStage />}
       {current === "review" && <ReviewStage />}
+      {current === "results" && <ResultsStage />}
 
       {next && (
         <div className="mt-10 border-t border-line pt-5">
