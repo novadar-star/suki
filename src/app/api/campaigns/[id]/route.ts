@@ -5,6 +5,12 @@ import { body, fail, notFound } from "@/lib/http";
 
 type Ctx = { params: Promise<{ id: string }> };
 
+export async function GET(_req: Request, { params }: Ctx) {
+  const { id } = await params;
+  const c = await getCampaign(id);
+  return c ? NextResponse.json(c) : notFound("Campaign");
+}
+
 export async function PATCH(req: Request, { params }: Ctx) {
   try {
     const { id } = await params;

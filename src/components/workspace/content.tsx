@@ -8,6 +8,7 @@ import { angleLabel, type Concept } from "@/lib/schemas";
 import { Button, inputClass } from "../button";
 import { Tag } from "../ui";
 import { useWorkspace } from "./workspace";
+import { VideoPreview } from "./video-preview";
 
 export function ContentStage() {
   const { campaign, busy, run } = useWorkspace();
@@ -19,6 +20,12 @@ export function ContentStage() {
     <>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <p className="max-w-2xl text-muted">Three concepts per approved playbook. Each one takes a different angle. Open a concept to see its script and storyboard.</p>
+        <div className="flex flex-wrap gap-2">
+        {campaign.concepts.length > 0 && (
+          <a href={`/api/campaigns/${campaign.id}/export`} className="press inline-flex min-h-9 items-center rounded-md px-3.5 text-sm font-medium text-muted hover:bg-paper hover:text-ink">
+            Export scripts
+          </a>
+        )}
         <Button
           variant={campaign.concepts.length ? "secondary" : "primary"}
           disabled={!approved.length}
@@ -27,6 +34,7 @@ export function ContentStage() {
         >
           {busy === "concepts" ? "Writing concepts" : campaign.concepts.length ? "Remake all concepts" : "Make concepts"}
         </Button>
+        </div>
       </div>
       {!approved.length && <p className="text-accent">Approve at least one playbook first.</p>}
 
@@ -76,9 +84,10 @@ function ConceptCard({ c, color, onOpen }: { c: Concept; color: string; onOpen: 
 
   return (
     <article className={clsx("rounded-xl border border-line bg-panel", c.status === "rejected" && "opacity-55")}>
-      <button onClick={onOpen} aria-label={`Open script and storyboard for ${c.title}`} className="block w-full rounded-t-xl p-4 text-left hover:bg-paper/50">
+      <button onClick={onOpen} className="block w-full rounded-t-xl p-4 text-left hover:bg-paper/50">
         <div className="flex flex-wrap items-center gap-1.5">
           <Maximize2 aria-hidden className="order-last ml-auto size-4 text-muted" />
+          <span className="sr-only">Open script and storyboard.</span>
           <span className="rounded-full px-2.5 py-0.5 text-xs font-medium text-white" style={{ background: color }}>
             {angleLabel[c.angleType]}
           </span>
@@ -128,6 +137,7 @@ function ConceptDialog({ c, onClose }: { c: Concept; onClose: () => void }) {
   const { campaign, busy, run } = useWorkspace();
   const ref = useRef<HTMLDialogElement>(null);
   const [editing, setEditing] = useState(false);
+  const [view, setView] = useState<"storyboard" | "video">("storyboard");
   const a = accounts.find((x) => x.id === c.accountId)!;
 
   useEffect(() => {
@@ -192,10 +202,33 @@ function ConceptDialog({ c, onClose }: { c: Concept; onClose: () => void }) {
           </div>
         </dl>
 
-        <div className="mb-6 flex gap-3 overflow-x-auto pb-2">
-          {c.scenes.map((s, i) => (
-            <PhoneFrame key={i} scene={s} n={i + 1} color={a.color} />
+        <div className="mb-3 flex gap-1" role="tablist" aria-label="View">
+          {(["storyboard", "video"] as const).map((v) => (
+            <button
+              key={v}
+              role="tab"
+              aria-selected={view === v}
+              onClick={() => setView(v)}
+              className={clsx("press rounded-md px-3 py-1.5 text-sm", view === v ? "bg-ink text-white" : "text-muted hover:bg-paper")}
+            >
+              {v === "storyboard" ? "Storyboard" : "Video preview"}
+            </button>
           ))}
+        </div>
+        <div className="mb-6">
+          {view === "storyboard" ? (
+            <div className="flex gap-3 overflow-x-auto pb-2">
+              {c.scenes.map((s, i) => (
+                <PhoneFrame key={i} scene={s} n={i + 1} color={a.color} />
+              ))}
+            </div>
+          ) : (
+            <VideoPreview
+              props={{ accountName: a.name, color: a.color, scenes: c.scenes }}
+              renderUrl={`/api/campaigns/${campaign.id}/concepts/${c.id}/video`}
+              fileName={`${a.id}-${c.id}.mp4`}
+            />
+          )}
         </div>
 
         {editing ? (
