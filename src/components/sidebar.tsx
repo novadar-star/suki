@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 
 const links = [
+  { href: "/", label: "Campaigns" },
   { href: "/brand", label: "Brand Brain" },
   { href: "/accounts", label: "Accounts" },
   { href: "/trends", label: "Trend references" },
@@ -15,7 +16,7 @@ export function Sidebar() {
   return (
     <nav className="flex gap-1 md:flex-col" aria-label="Main">
       {links.map((l) => {
-        const active = path.startsWith(l.href);
+        const active = l.href === "/" ? path === "/" || path.startsWith("/campaigns") : path.startsWith(l.href);
         return (
           <Link
             key={l.href}

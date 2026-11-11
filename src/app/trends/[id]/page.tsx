@@ -1,17 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { trends } from "@/data/trends";
+import { getTrend } from "@/lib/repo";
+import { EvidenceForm } from "./evidence-form";
 import { confidenceHelp, confidenceOf } from "@/lib/confidence";
 import { ConfidenceBadge } from "@/components/confidence-badge";
 import { Field, Panel, PanelTitle, Tag, fmtDate } from "@/components/ui";
 
-export function generateStaticParams() {
-  return trends.map((t) => ({ id: t.id }));
-}
+export const dynamic = "force-dynamic";
 
 export default async function TrendPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const t = trends.find((x) => x.id === id);
+  const t = await getTrend(id);
   if (!t) notFound();
   const level = confidenceOf(t);
   const a = t.analysis;
@@ -33,7 +32,7 @@ export default async function TrendPage({ params }: { params: Promise<{ id: stri
         <Panel>
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <h2 className="text-lg font-semibold">How the format works</h2>
-            <Tag>{a.origin === "ai" ? "AI reading. Check before use." : "Written by the Suki team"}</Tag>
+            <Tag>{a.origin === "ai" ? "AI reading of your description. Check before use." : a.origin === "demo" ? "Sample answer (demo mode)" : "Written by the Suki team"}</Tag>
           </div>
           <dl className="grid gap-4 sm:grid-cols-2">
             <Field label="Hook">{a.hookPattern}</Field>
@@ -72,6 +71,7 @@ export default async function TrendPage({ params }: { params: Promise<{ id: stri
               ))}
             </ul>
           )}
+          <EvidenceForm trendId={t.id} />
           <dl className="mt-6 grid gap-3 border-t border-line pt-4 text-sm">
             <Field label="Source">
               {t.sourceUrl ? (
@@ -79,7 +79,7 @@ export default async function TrendPage({ params }: { params: Promise<{ id: stri
                   {t.sourceUrl}
                 </a>
               ) : (
-                "Common format. No single source."
+                t.kind === "submitted" ? "No source link. Treat as an illustrative example." : "Common format. No single source."
               )}
             </Field>
             <Field label="Added">

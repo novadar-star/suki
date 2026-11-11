@@ -72,7 +72,7 @@ export type Evidence = {
 };
 
 export type TrendAnalysis = {
-  origin: "curated" | "ai";
+  origin: "curated" | "ai" | "demo";
   hookPattern: string;
   narrative: string;
   format: string;
