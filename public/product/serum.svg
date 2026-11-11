@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 260" role="img" aria-label="Serum bottle illustration">
+  <rect width="200" height="260" fill="#fbe7ee"/>
+  <rect x="88" y="30" width="24" height="34" rx="10" fill="#1c1f23"/>
+  <rect x="80" y="62" width="40" height="16" rx="3" fill="#1c1f23"/>
+  <rect x="62" y="76" width="76" height="150" rx="14" fill="#ffffff" stroke="#1c1f23" stroke-width="3"/>
+  <rect x="62" y="150" width="76" height="76" rx="0" fill="#f5c9d8" opacity=".6"/>
+  <text x="100" y="126" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#1c1f23">30 ml</text>
+</svg>
