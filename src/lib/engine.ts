@@ -81,6 +81,7 @@ export async function remakeConcept(c: Campaign, conceptId: string, findingId?: 
     status: "draft",
     origin: aiMode === "live" ? "ai" : "demo",
     revisedFor: finding?.message,
+    previousHook: out.hook === current.hook ? undefined : current.hook,
   };
 }
 

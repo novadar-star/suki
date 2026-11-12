@@ -1,5 +1,5 @@
 import { seedData } from "@/data/seed";
-import type { StudioData } from "./types";
+import type { Brand, StudioData } from "./types";
 import { angleLabel, type Concept, type Finding, type ObjectiveType, type Report } from "./schemas";
 
 // Every check here is plain code. No AI decides a finding.
@@ -21,9 +21,18 @@ export function words(text: string) {
 export function overlap(a: string, b: string) {
   const A = words(a);
   const B = words(b);
-  if (!A.size || !B.size) return { score: 0, shared: [] as string[] };
-  const shared = [...A.keys()].filter((k) => B.has(k)).map((k) => A.get(k)!);
-  return { score: shared.length / Math.min(A.size, B.size), shared };
+  if (!A.size || !B.size) return { score: 0, shared: [] as string[], sharedB: [] as string[] };
+  const keys = [...A.keys()].filter((k) => B.has(k));
+  // The same word can be spelled differently in each hook ("fits" and "fit"), so keep both spellings.
+  return { score: keys.length / Math.min(A.size, B.size), shared: keys.map((k) => A.get(k)!), sharedB: keys.map((k) => B.get(k)!) };
+}
+
+// A short fingerprint of the brand rules a check ran against. If the Brand Brain changes later, the review can say so.
+export function brandStamp(brand: Brand) {
+  const text = JSON.stringify([brand.claims.map((c) => [c.id, c.text]), brand.guidelines]);
+  let h = 5381;
+  for (let i = 0; i < text.length; i++) h = ((h * 33) ^ text.charCodeAt(i)) >>> 0;
+  return h.toString(36);
 }
 
 const PROHIBITED: { claim: string; pattern: RegExp }[] = [
@@ -112,6 +121,10 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
             kind: "history_repeat",
           rule: `QC-05 repetition: hook overlap of ${HISTORY_LIMIT} or more with a past hook`,
           excerpt: { text: c.hook, matches: o.shared },
+            pair: [
+              { conceptId: c.id, text: c.hook, matches: o.shared },
+              { label: `Past hook, ${new Date(h.date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}`, text: h.hook, matches: o.sharedB },
+            ],
             conceptIds: [c.id],
             message: `"${c.hook}" repeats a past ${name(accountId)} hook: "${h.hook}" (shared words: ${o.shared.join(", ")}).`,
             suggestion: "Write a new opening so followers don't see the same video twice.",
@@ -131,6 +144,10 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
           kind: "cross_overlap",
           rule: `QC-05 repetition: same angle and hook overlap of ${CROSS_LIMIT} or more across accounts`,
           excerpt: { text: b.hook, matches: o.shared },
+          pair: [
+            { conceptId: a.id, text: a.hook, matches: o.shared },
+            { conceptId: b.id, text: b.hook, matches: o.sharedB },
+          ],
           conceptIds: [a.id, b.id],
           message: `${name(a.accountId)} and ${name(b.accountId)} both use a ${angleLabel[a.angleType]} angle with near-identical hooks (shared words: ${o.shared.join(", ")}).`,
           suggestion: "Make one of them specific to its own audience, for example a checklist, comparison or problem and solution.",
@@ -141,6 +158,10 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
           kind: "similar_hooks",
           rule: `QC-05 repetition: hook overlap of ${HOOK_LIMIT} or more`,
           excerpt: { text: b.hook, matches: o.shared },
+          pair: [
+            { conceptId: a.id, text: a.hook, matches: o.shared },
+            { conceptId: b.id, text: b.hook, matches: o.sharedB },
+          ],
           conceptIds: [a.id, b.id],
           message: `"${a.hook}" and "${b.hook}" open in a very similar way (shared words: ${o.shared.join(", ")}).`,
           suggestion: "Change one opening line.",
@@ -243,6 +264,7 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
 
   return {
     createdAt: new Date().toISOString(),
+    brandStamp: brandStamp(brand),
     conceptCount: live.length,
     accountCount: new Set(live.map((c) => c.accountId)).size,
     angleCounts: count("angleType"),
