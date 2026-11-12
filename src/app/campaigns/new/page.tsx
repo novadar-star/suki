@@ -1,15 +1,25 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { Button, ErrorNote } from "@/components/button";
 import { PageHeader } from "@/components/ui";
 import { BriefFields } from "@/components/brief-fields";
 import { api } from "@/lib/client";
 import type { Campaign } from "@/lib/schemas";
 
-export default function NewCampaign() {
+// The landing page can send a brief here as ?objective=.
+export default function NewCampaignPage() {
+  return (
+    <Suspense>
+      <NewCampaign />
+    </Suspense>
+  );
+}
+
+function NewCampaign() {
   const router = useRouter();
+  const brief = useSearchParams().get("objective")?.trim().slice(0, 500);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,7 +45,7 @@ export default function NewCampaign() {
           initial={{
             name: "Hydration that fits real mornings",
             objectiveType: "organic",
-            objective: "Show the serum as one quick, easy step in very different daily routines.",
+            objective: brief || "Show the serum as one quick, easy step in very different daily routines.",
             keyMessage: "One lightweight step on damp skin, morning and night.",
             targetMarket: "People who want simple skincare that fits a busy day",
             deadline: "",
