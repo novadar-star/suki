@@ -249,7 +249,7 @@ export default function Welcome() {
             </li>
             <li>
               <h3>Overlap gets caught before production</h3>
-              <p className="wl-muted">Suki compares hooks, angles, stories and formats across the whole campaign. When two ideas are too close, it shows what overlaps and how to pull them apart.</p>
+              <p className="wl-muted">Suki compares hooks and angles across the whole campaign and against past posts. When two ideas are too close, it shows the words they share.</p>
             </li>
             <li>
               <h3>Clients only see claims they approved</h3>
