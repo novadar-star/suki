@@ -4,7 +4,8 @@ import Link from "next/link";
 import clsx from "clsx";
 import { useState } from "react";
 import { CircleCheck, OctagonX, TriangleAlert } from "lucide-react";
-import { angleLabel, objectiveTypeInfo, type Finding } from "@/lib/schemas";
+import { angleLabel, objectiveTypeInfo, type Finding, type PairSide } from "@/lib/schemas";
+import { brandStamp } from "@/lib/checks";
 import { assetId, deliverables } from "@/lib/campaign";
 import { Button, inputClass } from "../button";
 import { Tag } from "../ui";
@@ -26,8 +27,9 @@ const kindLabel: Record<Finding["kind"], string> = {
 };
 
 export function ReviewStage() {
-  const { campaign, busy, run } = useWorkspace();
+  const { campaign, busy, run, brand } = useWorkspace();
   const r = campaign.report;
+  const stale = !!r?.brandStamp && r.brandStamp !== brandStamp(brand);
   const overridden = (id: string) => campaign.qcOverrides.find((o) => o.findingId === id);
   const fixes = r?.findings.filter((f) => f.severity === "fix") ?? [];
   const checks = r?.findings.filter((f) => f.severity === "check" && !overridden(f.id)) ?? [];
@@ -51,6 +53,7 @@ export function ReviewStage() {
       </div>
 
       {!campaign.concepts.length && <p className="text-warn">Make concepts first.</p>}
+      {stale && <StaleNote>The Brand Brain changed after this check. Run the check again.</StaleNote>}
 
       {r && (
         <>
@@ -111,6 +114,52 @@ function Stat({ label, value, hint, tone = "plain" }: { label: string; value: st
   );
 }
 
+function StaleNote({ children }: { children: React.ReactNode }) {
+  return (
+    <p role="status" className="mb-6 flex items-center gap-2 rounded-md bg-warn-soft px-3 py-2 text-sm text-warn">
+      <TriangleAlert aria-hidden className="size-4 shrink-0" />
+      {children}
+    </p>
+  );
+}
+
+// The two lines that collide, side by side, with the words they share marked in both.
+function Pair({ sides }: { sides: [PairSide, PairSide] }) {
+  const { campaign, accounts } = useWorkspace();
+  return (
+    <div className="mt-3 grid gap-2 md:grid-cols-2">
+      {sides.map((s, i) => {
+        const c = campaign.concepts.find((x) => x.id === s.conceptId);
+        const a = accounts.find((x) => x.id === c?.accountId);
+        const words = s.matches.filter(Boolean).map((m) => m.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+        const parts = words.length ? s.text.split(new RegExp(`\\b(${words.join("|")})\\b`, "gi")) : [s.text];
+        return (
+          <div key={i} className="rounded-md border border-line bg-paper px-3 py-2">
+            <p className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
+              {a && <span aria-hidden className="size-2 rounded-full" style={{ background: a.color }} />}
+              {a?.name ?? s.label}
+              {c && <code className="font-mono text-[11px]">{assetId(campaign, c.id)}</code>}
+            </p>
+            <p className="mt-1 text-[15px]">
+              &ldquo;
+              {parts.map((p, j) =>
+                j % 2 === 1 ? (
+                  <mark key={j} className="rounded bg-bad-soft px-0.5 font-semibold text-bad">
+                    {p}
+                  </mark>
+                ) : (
+                  <span key={j}>{p}</span>
+                ),
+              )}
+              &rdquo;
+            </p>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // The offending words are marked so the reviewer sees exactly what broke the rule.
 function Excerpt({ text, matches }: { text: string; matches: string[] }) {
   const words = matches.filter(Boolean).map((m) => m.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
@@ -134,11 +183,11 @@ function FindingRow({ f }: { f: Finding }) {
   const { campaign, busy, run, accounts } = useWorkspace();
   const [overriding, setOverriding] = useState(false);
   const [reason, setReason] = useState("");
-  // For a pair, rewrite the later concept and keep the first one.
-  const target = f.conceptIds[f.conceptIds.length - 1];
-  const concept = campaign.concepts.find((c) => c.id === target);
+  // For a pair, the reviewer picks which concept to rewrite. The other one stays as it is.
+  const targets = f.conceptIds.map((id) => campaign.concepts.find((c) => c.id === id)).filter((c) => !!c);
+  const concept = targets[targets.length - 1];
   const account = accounts.find((a) => a.id === concept?.accountId);
-  const key = `fix:${f.id}`;
+  const twoAccounts = new Set(targets.map((c) => c.accountId)).size > 1;
   const blocker = f.severity === "fix";
   const override = campaign.qcOverrides.find((o) => o.findingId === f.id);
   const url = `/api/campaigns/${campaign.id}/overrides`;
@@ -159,7 +208,7 @@ function FindingRow({ f }: { f: Finding }) {
         {concept && <code className="font-mono text-[11px] text-muted">{assetId(campaign, concept.id)}</code>}
       </div>
       <p className="mt-2">{f.message}</p>
-      {f.excerpt && <Excerpt text={f.excerpt.text} matches={f.excerpt.matches} />}
+      {f.pair ? <Pair sides={f.pair} /> : f.excerpt && <Excerpt text={f.excerpt.text} matches={f.excerpt.matches} />}
       <p className="mt-2 text-xs text-muted">
         Rule: <span className="text-ink">{f.rule ?? kindLabel[f.kind]}</span>
       </p>
@@ -206,21 +255,32 @@ function FindingRow({ f }: { f: Finding }) {
       ) : (
         concept && (
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            <Button
-              variant={blocker ? "primary" : "secondary"}
-              busy={busy === key}
-              onClick={() => run(key, `/api/campaigns/${campaign.id}/concepts/${target}`, "POST", { findingId: f.id })}
-            >
-              {busy === key ? "Rewriting" : "Rewrite this concept"}
-            </Button>
+            {targets.map((t) => {
+              const key = `fix:${f.id}:${t.id}`;
+              const last = t.id === concept.id;
+              const who = twoAccounts ? accounts.find((a) => a.id === t.accountId)?.name : `\u201c${t.title}\u201d`;
+              return (
+                <Button
+                  key={t.id}
+                  variant={blocker && last ? "primary" : "secondary"}
+                  busy={busy === key}
+                  disabled={!!busy}
+                  onClick={() => run(key, `/api/campaigns/${campaign.id}/concepts/${t.id}`, "POST", { findingId: f.id })}
+                >
+                  {busy === key ? "Rewriting" : targets.length > 1 ? `Rewrite ${who}` : "Rewrite this concept"}
+                </Button>
+              );
+            })}
             {!blocker && (
               <Button variant="quiet" disabled={!!busy} onClick={() => setOverriding(true)}>
                 Override with reason
               </Button>
             )}
-            <span className="text-sm text-muted">
-              Rewrites &ldquo;{concept.title}&rdquo; for {account?.name}
-            </span>
+            {targets.length === 1 && (
+              <span className="text-sm text-muted">
+                Rewrites &ldquo;{concept.title}&rdquo; for {account?.name}
+              </span>
+            )}
           </div>
         )
       )}
@@ -245,7 +305,8 @@ export function SignOffStage() {
 }
 
 function SignOff() {
-  const { campaign, busy, run, accounts } = useWorkspace();
+  const { campaign, busy, run, accounts, brand } = useWorkspace();
+  const stale = !!campaign.report?.brandStamp && campaign.report.brandStamp !== brandStamp(brand);
   const url = `/api/campaigns/${campaign.id}`;
   const live = campaign.concepts.filter((c) => c.status !== "rejected");
   const approved = deliverables(campaign);
@@ -256,6 +317,8 @@ function SignOff() {
 
   if (campaign.signedOffAt)
     return (
+      <>
+      {stale && <StaleNote>The Brand Brain changed after sign-off. Reopen, then run the check again.</StaleNote>}
       <section className="mb-8 rounded-xl border border-ok/30 bg-ok-soft/60 p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -289,6 +352,7 @@ function SignOff() {
           </div>
         </div>
       </section>
+      </>
     );
 
   return (

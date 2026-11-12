@@ -106,6 +106,8 @@ export const conceptSchema = conceptOut.extend({
   status: statusSchema,
   origin: originSchema,
   revisedFor: z.string().max(300).optional(),
+  // The hook before the last rewrite, so the reviewer can compare old and new.
+  previousHook: z.string().max(300).optional(),
 });
 export type Concept = z.infer<typeof conceptSchema>;
 
@@ -132,7 +134,12 @@ export type Finding = {
   rule: string;
   // The line that broke the rule, with the offending words.
   excerpt?: { text: string; matches: string[] };
+  // For overlap findings: the two lines that collide, each with its shared words.
+  // A side with no conceptId is a past hook.
+  pair?: [PairSide, PairSide];
 };
+
+export type PairSide = { conceptId?: string; label?: string; text: string; matches: string[] };
 
 export type QcOverride = { findingId: string; reason: string; by: string; at: string };
 
@@ -150,6 +157,8 @@ export type Insight = {
 
 export type Report = {
   createdAt: string;
+  // Fingerprint of the Brand Brain rules this check ran against. Older reports have none.
+  brandStamp?: string;
   conceptCount: number;
   accountCount: number;
   angleCounts: Record<string, number>;

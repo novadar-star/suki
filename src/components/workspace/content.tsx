@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { Maximize2, X } from "lucide-react";
-import { angleLabel, type Concept } from "@/lib/schemas";
+import { angleLabel, type Campaign, type Concept } from "@/lib/schemas";
 import { Button, inputClass } from "../button";
 import { Tag } from "../ui";
 import { useWorkspace } from "./workspace";
@@ -14,6 +14,7 @@ export function ContentStage() {
   const { campaign, busy, run, accounts } = useWorkspace();
   const approved = campaign.playbooks.filter((p) => p.status === "approved");
   const [open, setOpen] = useState<string | null>(null);
+  const [view, setView] = useState<"table" | "cards">("table");
   const openConcept = campaign.concepts.find((c) => c.id === open);
 
   return (
@@ -38,6 +39,25 @@ export function ContentStage() {
       </div>
       {!approved.length && <p className="text-warn">Approve at least one playbook first.</p>}
 
+      {campaign.concepts.length > 0 && (
+        <div className="mb-4 flex gap-1" role="tablist" aria-label="Layout">
+          {(["table", "cards"] as const).map((v) => (
+            <button
+              key={v}
+              role="tab"
+              aria-selected={view === v}
+              onClick={() => setView(v)}
+              className={clsx("press rounded-md px-3 py-1.5 text-sm", view === v ? "bg-ink text-inv" : "text-muted hover:bg-paper")}
+            >
+              {v === "table" ? "Table" : "Cards"}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {view === "table" && campaign.concepts.length > 0 ? (
+        <ConceptTable onOpen={setOpen} />
+      ) : (
       <div className="grid gap-6 xl:grid-cols-3">
         {approved.map((p) => {
           const a = accounts.find((x) => x.id === p.accountId)!;
@@ -69,18 +89,130 @@ export function ContentStage() {
           );
         })}
       </div>
+      )}
 
       {openConcept && <ConceptDialog c={openConcept} onClose={() => setOpen(null)} />}
     </>
   );
 }
 
-function ConceptCard({ c, color, onOpen }: { c: Concept; color: string; onOpen: () => void }) {
+// Open findings that name this concept. Both sides of a pair are counted, and overridden warnings are left out.
+function openFlags(campaign: Campaign, id: string) {
+  const list = campaign.report?.findings.filter((f) => f.conceptIds.includes(id) && !campaign.qcOverrides.some((o) => o.findingId === f.id)) ?? [];
+  return { fix: list.filter((f) => f.severity === "fix").length, check: list.filter((f) => f.severity === "check").length };
+}
+
+function FlagTags({ id, showPass }: { id: string; showPass?: boolean }) {
+  const { campaign } = useWorkspace();
+  if (!campaign.report) return null;
+  const { fix, check } = openFlags(campaign, id);
+  return (
+    <>
+      {fix > 0 && (
+        <Tag tone="bad">
+          {fix} blocker{fix === 1 ? "" : "s"}
+        </Tag>
+      )}
+      {check > 0 && (
+        <Tag tone="warn">
+          {check} warning{check === 1 ? "" : "s"}
+        </Tag>
+      )}
+      {showPass && !fix && !check && <Tag tone="ok">Passes checks</Tag>}
+    </>
+  );
+}
+
+function ConceptActions({ c }: { c: Concept }) {
   const { campaign, busy, run } = useWorkspace();
   const setStatus = (status: Concept["status"]) =>
     run(`c:${c.id}`, `/api/campaigns/${campaign.id}`, "PATCH", {
       concepts: campaign.concepts.map((x) => (x.id === c.id ? { ...x, status } : x)),
     });
+  return (
+    <>
+      {c.status !== "approved" && (
+        <Button variant="quiet" busy={busy === `c:${c.id}`} onClick={() => setStatus("approved")}>
+          Approve
+        </Button>
+      )}
+      <Button variant="quiet" busy={busy === `remake:${c.id}`} onClick={() => run(`remake:${c.id}`, `/api/campaigns/${campaign.id}/concepts/${c.id}`, "POST")}>
+        Remake
+      </Button>
+      {c.status !== "rejected" && (
+        <Button variant="danger" disabled={!!busy} onClick={() => setStatus("rejected")}>
+          Reject
+        </Button>
+      )}
+    </>
+  );
+}
+
+// Every concept in one list, so the whole portfolio can be read without scrolling through cards.
+function ConceptTable({ onOpen }: { onOpen: (id: string) => void }) {
+  const { campaign, accounts } = useWorkspace();
+  const order = (c: Concept) => campaign.accountIds.indexOf(c.accountId);
+  const rows = [...campaign.concepts].sort((a, b) => order(a) - order(b));
+  return (
+    <div className="overflow-x-auto rounded-xl border border-line">
+      <table className="w-full min-w-[960px] text-left text-sm">
+        <thead className="bg-panel text-muted">
+          <tr>
+            {["Account", "Angle", "Format", "Hook", "Status", ""].map((h, i) => (
+              <th key={i} scope="col" className="px-3 py-2 font-normal">
+                {h || <span className="sr-only">Actions</span>}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((c) => {
+            const a = accounts.find((x) => x.id === c.accountId);
+            return (
+              <tr key={c.id} className={clsx("border-t border-line align-top", c.status === "rejected" && "opacity-55")}>
+                <td className="whitespace-nowrap px-3 py-2.5">
+                  <span className="flex items-center gap-2">
+                    <span aria-hidden className="size-2 rounded-full" style={{ background: a?.color }} />
+                    {a?.name}
+                  </span>
+                </td>
+                <td className="px-3 py-2.5">{angleLabel[c.angleType]}</td>
+                <td className="px-3 py-2.5">{c.format}</td>
+                <td className="min-w-[260px] px-3 py-2.5">
+                  <button onClick={() => onOpen(c.id)} className="text-left text-[15px] font-medium hover:underline">
+                    &ldquo;{c.hook}&rdquo;
+                  </button>
+                  {c.previousHook && (
+                    <p className="text-muted">
+                      Was: <s>&ldquo;{c.previousHook}&rdquo;</s>
+                    </p>
+                  )}
+                  <code className="block font-mono text-[11px] text-muted">{assetId(campaign, c.id)}</code>
+                </td>
+                <td className="whitespace-nowrap px-3 py-2.5">
+                  <span className="flex flex-col items-start gap-1">
+                    <Tag tone={c.status === "approved" ? "ok" : c.status === "rejected" ? "bad" : "plain"}>
+                      {c.status === "approved" ? "Approved" : c.status === "rejected" ? "Rejected" : "Draft"}
+                    </Tag>
+                    <FlagTags id={c.id} showPass />
+                  </span>
+                </td>
+                <td className="px-1 py-1">
+                  <span className="flex justify-end">
+                    <ConceptActions c={c} />
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ConceptCard({ c, color, onOpen }: { c: Concept; color: string; onOpen: () => void }) {
+  const { campaign } = useWorkspace();
 
   return (
     <article className={clsx("rounded-xl border border-line bg-panel", c.status === "rejected" && "opacity-55")}>
@@ -93,28 +225,22 @@ function ConceptCard({ c, color, onOpen }: { c: Concept; color: string; onOpen: 
           </span>
           <Tag>{c.format}</Tag>
           {c.status !== "draft" && <Tag tone={c.status === "approved" ? "ok" : "bad"}>{c.status === "approved" ? "Approved" : "Rejected"}</Tag>}
+          <FlagTags id={c.id} />
         </div>
         <p className="mt-3 font-display text-xl font-semibold leading-snug">&ldquo;{c.hook}&rdquo;</p>
         <code className="mt-1 block font-mono text-[11px] text-muted">{assetId(campaign, c.id)}</code>
         <p className="mt-2 text-sm text-muted">
           {c.title}. {c.differentiation}
         </p>
+        {c.previousHook && (
+          <p className="mt-2 text-sm text-muted">
+            Was: <s>&ldquo;{c.previousHook}&rdquo;</s>
+          </p>
+        )}
         {c.revisedFor && <p className="mt-2 text-sm text-ink">Rewritten to fix: {c.revisedFor}</p>}
       </button>
       <div className="flex flex-wrap gap-1 border-t border-line p-2">
-        {c.status !== "approved" && (
-          <Button variant="quiet" busy={busy === `c:${c.id}`} onClick={() => setStatus("approved")}>
-            Approve
-          </Button>
-        )}
-        <Button variant="quiet" busy={busy === `remake:${c.id}`} onClick={() => run(`remake:${c.id}`, `/api/campaigns/${campaign.id}/concepts/${c.id}`, "POST")}>
-          Remake
-        </Button>
-        {c.status !== "rejected" && (
-          <Button variant="danger" disabled={!!busy} onClick={() => setStatus("rejected")}>
-            Reject
-          </Button>
-        )}
+        <ConceptActions c={c} />
       </div>
     </article>
   );
