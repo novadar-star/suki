@@ -1,13 +1,24 @@
-import { accounts } from "@/data/accounts";
+import Link from "next/link";
+import { seedData } from "@/data/seed";
+import { getAccounts } from "@/lib/repo";
 import { Field, List, PageHeader, Tag } from "@/components/ui";
 
-export default function AccountsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function AccountsPage() {
+  const accounts = await getAccounts();
+  const isSample = (id: string) => seedData.accounts.some((a) => a.id === id);
   return (
     <>
-      <PageHeader
-        title="Accounts"
-        intro="Two accounts can reach the same people and still sound nothing alike. Each account keeps its own voice, topics and past hooks."
-      />
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <PageHeader
+          title="Accounts"
+          intro="Two accounts can reach the same people and still sound nothing alike. Each account keeps its own voice, topics and past hooks."
+        />
+        <Link href="/accounts/new" className="press inline-flex min-h-9 items-center rounded-md bg-ink px-4 text-sm font-medium text-inv hover:bg-ink/85">
+          Add account
+        </Link>
+      </div>
       <div className="grid gap-4 xl:grid-cols-3">
         {accounts.map((a) => (
           <article
@@ -16,7 +27,12 @@ export default function AccountsPage() {
             style={{ borderTop: `4px solid ${a.color}` }}
           >
             <div className="p-5">
-              <h2 className="text-2xl font-semibold">{a.name}</h2>
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="text-2xl font-semibold">{a.name}</h2>
+                <Link href={`/accounts/${a.id}/edit`} className="press shrink-0 rounded-md border border-line px-2.5 py-1 text-sm font-medium hover:border-ink/30" aria-label={`Edit ${a.name}`}>
+                  Edit
+                </Link>
+              </div>
               <p className="text-sm text-muted">
                 {a.handle} on {a.platform}
               </p>
@@ -40,6 +56,7 @@ export default function AccountsPage() {
             </dl>
             <div className="border-t border-line bg-paper/60 p-5">
               <h3 className="mb-2 text-sm font-semibold">Past hooks</h3>
+              {a.history.length === 0 && <p className="text-sm text-muted">None yet. Hooks from signed-off campaigns will be listed here.</p>}
               <ul className="space-y-2">
                 {a.history.map((h) => (
                   <li key={h.hook}>
@@ -51,7 +68,7 @@ export default function AccountsPage() {
                   </li>
                 ))}
               </ul>
-              <p className="mt-3 text-xs text-muted">Sample history for the demo.</p>
+              {isSample(a.id) && a.history.length > 0 && <p className="mt-3 text-xs text-muted">Sample history for the demo.</p>}
             </div>
           </article>
         ))}

@@ -99,3 +99,6 @@ export type Trend = {
 };
 
 export type Confidence = "reference" | "observed" | "supported";
+
+// The studio's own records: one brand and its accounts. Starts from the seed in src/data, then saved copies win.
+export type StudioData = { brand: Brand; accounts: Account[] };

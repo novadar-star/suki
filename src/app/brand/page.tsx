@@ -1,8 +1,11 @@
-import { brand } from "@/data/brand";
+import { getBrand } from "@/lib/repo";
 import { Field, IdList, List, PageHeader, Panel, PanelTitle, Tag } from "@/components/ui";
 import { ruleId } from "@/lib/checks";
 
-export default function BrandPage() {
+export const dynamic = "force-dynamic";
+
+export default async function BrandPage() {
+  const brand = await getBrand();
   const facts = brand.claims.filter((c) => c.kind === "product_fact");
   const marketing = brand.claims.filter((c) => c.kind === "marketing_claim");
   const g = brand.guidelines;

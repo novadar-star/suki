@@ -3,7 +3,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import { createClient } from "@supabase/supabase-js";
 
-export type Kind = "campaign" | "trend";
+export type Kind = "campaign" | "trend" | "account" | "brand";
 
 const url = process.env.SUPABASE_URL;
 const key = process.env.SUPABASE_SECRET_KEY;

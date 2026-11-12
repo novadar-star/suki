@@ -3,17 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { Maximize2, X } from "lucide-react";
-import { accounts } from "@/data/accounts";
 import { angleLabel, type Concept } from "@/lib/schemas";
 import { Button, inputClass } from "../button";
 import { Tag } from "../ui";
 import { useWorkspace } from "./workspace";
 import { assetId } from "@/lib/campaign";
-import { brand } from "@/data/brand";
 import { VideoPreview } from "./video-preview";
 
 export function ContentStage() {
-  const { campaign, busy, run } = useWorkspace();
+  const { campaign, busy, run, accounts } = useWorkspace();
   const approved = campaign.playbooks.filter((p) => p.status === "approved");
   const [open, setOpen] = useState<string | null>(null);
   const openConcept = campaign.concepts.find((c) => c.id === open);
@@ -137,7 +135,7 @@ export function PhoneFrame({ scene, n, color }: { scene: Concept["scenes"][numbe
 }
 
 function ConceptDialog({ c, onClose }: { c: Concept; onClose: () => void }) {
-  const { campaign, busy, run } = useWorkspace();
+  const { campaign, busy, run, accounts, brand } = useWorkspace();
   const ref = useRef<HTMLDialogElement>(null);
   const [editing, setEditing] = useState(false);
   const [view, setView] = useState<"storyboard" | "video">("storyboard");

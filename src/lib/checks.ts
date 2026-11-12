@@ -1,5 +1,5 @@
-import { accounts } from "@/data/accounts";
-import { brand } from "@/data/brand";
+import { seedData } from "@/data/seed";
+import type { StudioData } from "./types";
 import { angleLabel, type Concept, type Finding, type ObjectiveType, type Report } from "./schemas";
 
 // Every check here is plain code. No AI decides a finding.
@@ -35,11 +35,16 @@ const PROHIBITED: { claim: string; pattern: RegExp }[] = [
   { claim: "Dermatologist recommended", pattern: /dermatologist/i },
 ];
 
+// Claims with a hand-written pattern use it. Any other prohibited claim is matched as a plain phrase.
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+function prohibitedPatterns(claims: string[]) {
+  return claims.map((claim) => PROHIBITED.find((p) => p.claim === claim) ?? { claim, pattern: new RegExp(escapeRe(claim.trim()).replace(/\s+/g, "\\s+"), "i") });
+}
+
 const HOOK_LIMIT = 0.6; // any two hooks
 const CROSS_LIMIT = 0.5; // same angle in two accounts
 const HISTORY_LIMIT = 0.6; // hook vs the account's past hooks
 
-const name = (id: string) => accounts.find((a) => a.id === id)?.name ?? id;
 const conceptText = (c: Concept) =>
   [c.hook, c.angle, c.cta, ...c.scenes.flatMap((s) => [s.voiceover, s.onScreen])].join(" \n ");
 
@@ -61,7 +66,10 @@ const PRODUCT = /\b(serum|bottle|dropper|lust minerals|4d|hyaluronic)\b/i;
 const ACTION_CTA = /\b(shop|buy|get yours|order|tap|link|try it|add to cart)\b/i;
 const HARD_SELL = /\b(buy now|shop now|order now|discount|sale|% off|limited time|use code)\b/i;
 
-export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "organic"): Report {
+// Pass the saved brand and accounts. Without them the seed data is used (the check scripts rely on that).
+export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "organic", data: StudioData = seedData): Report {
+  const { brand, accounts } = data;
+  const name = (id: string) => accounts.find((a) => a.id === id)?.name ?? id;
   const live = concepts.filter((c) => c.status !== "rejected");
   const findings: Finding[] = [];
   const add = (f: Omit<Finding, "id">) => findings.push({ ...f, id: `${f.kind}:${f.conceptIds.join("+")}` });
@@ -142,7 +150,7 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
   // Brand safety, per concept
   for (const c of live) {
     const text = conceptText(c);
-    for (const p of PROHIBITED) {
+    for (const p of prohibitedPatterns(brand.guidelines.prohibitedClaims)) {
       const m = text.match(p.pattern);
       if (m)
         add({

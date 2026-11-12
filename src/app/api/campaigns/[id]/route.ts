@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCampaign, saveCampaign } from "@/lib/repo";
+import { getCampaign, saveCampaign, getStudioData } from "@/lib/repo";
 import { updateCampaignIn } from "@/lib/schemas";
 import { runChecks } from "@/lib/checks";
 import { body, fail, notFound } from "@/lib/http";
@@ -26,7 +26,7 @@ export async function PATCH(req: Request, { params }: Ctx) {
     }
     // Edits re-run the checks so the review stays current. A new setup clears it.
     if (patch.accountIds || patch.trendIds) next.report = null;
-    else if ((patch.concepts || patch.objectiveType) && next.report) next.report = runChecks(next.concepts, next.objectiveType);
+    else if ((patch.concepts || patch.objectiveType) && next.report) next.report = runChecks(next.concepts, next.objectiveType, await getStudioData());
     // Any change to the work or the objective needs a fresh sign-off.
     if (patch.concepts || patch.playbooks || patch.accountIds || patch.trendIds || patch.objectiveType) {
       next.signedOffAt = null;

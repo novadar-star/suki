@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import clsx from "clsx";
-import { accounts } from "@/data/accounts";
 import type { Playbook } from "@/lib/schemas";
 import { Button, inputClass } from "../button";
 import { ConfidenceBadge } from "../confidence-badge";
@@ -43,6 +42,7 @@ export function PlaybooksStage() {
 }
 
 function AccountHeader({ accountId }: { accountId: string }) {
+  const { accounts } = useWorkspace();
   const a = accounts.find((x) => x.id === accountId)!;
   return (
     <div className="flex items-center gap-2">
@@ -71,7 +71,7 @@ const fields: { key: keyof Playbook; label: string }[] = [
 ];
 
 function PlaybookCard({ p }: { p: Playbook }) {
-  const { campaign, trends, busy, run } = useWorkspace();
+  const { campaign, trends, busy, run, accounts } = useWorkspace();
   const [editing, setEditing] = useState(false);
   const trend = trends.find((t) => t.id === p.trendId);
   const color = accounts.find((a) => a.id === p.accountId)?.color;

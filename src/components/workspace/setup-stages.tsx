@@ -2,15 +2,13 @@
 
 import Link from "next/link";
 import clsx from "clsx";
-import { accounts } from "@/data/accounts";
-import { brand } from "@/data/brand";
 import { Button } from "../button";
 import { BriefFields } from "../brief-fields";
 import { ConfidenceBadge } from "../confidence-badge";
 import { useWorkspace } from "./workspace";
 
 export function BriefStage() {
-  const { campaign, busy, run } = useWorkspace();
+  const { campaign, busy, run, brand } = useWorkspace();
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
       <form
@@ -63,7 +61,7 @@ export function BriefStage() {
 }
 
 export function AccountsStage() {
-  const { campaign, busy, run } = useWorkspace();
+  const { campaign, busy, run, accounts } = useWorkspace();
   const toggle = (id: string) => {
     const on = campaign.accountIds.includes(id);
     if (on && campaign.accountIds.length === 1) return;

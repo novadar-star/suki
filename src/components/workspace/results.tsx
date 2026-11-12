@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useState } from "react";
 import clsx from "clsx";
 import { FlaskConical } from "lucide-react";
-import { accounts } from "@/data/accounts";
 import { assetId, deliverables, sampleRows } from "@/lib/campaign";
 import { angleLabel, type Campaign, type ResultRow } from "@/lib/schemas";
 import { Button, inputClass } from "../button";
@@ -48,7 +47,7 @@ export function ResultsStage() {
 }
 
 function ResultsForm({ onDone }: { onDone: () => void }) {
-  const { campaign, busy, run } = useWorkspace();
+  const { campaign, busy, run, accounts } = useWorkspace();
   const cols = columns[campaign.objectiveType];
   const items = deliverables(campaign);
   const [source, setSource] = useState<"entered" | "sample">(campaign.results?.source ?? "entered");

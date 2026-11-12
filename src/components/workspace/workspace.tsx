@@ -6,7 +6,7 @@ import clsx from "clsx";
 import { Check } from "lucide-react";
 import { api } from "@/lib/client";
 import type { Campaign } from "@/lib/schemas";
-import type { Confidence, Trend } from "@/lib/types";
+import type { Confidence, StudioData, Trend } from "@/lib/types";
 import { ErrorNote } from "../button";
 import { AccountsStage, BriefStage, TrendsStage } from "./setup-stages";
 import { PlaybooksStage } from "./playbooks";
@@ -32,7 +32,7 @@ const STAGES = [
 ] as const;
 export type StageId = (typeof STAGES)[number]["id"];
 
-type Ctx = {
+type Ctx = StudioData & {
   campaign: Campaign;
   trends: TrendView[];
   busy: string | null;
@@ -63,7 +63,7 @@ function isDone(c: Campaign, id: StageId) {
   }
 }
 
-export function Workspace({ initial, trends, stage }: { initial: Campaign; trends: TrendView[]; stage: StageId }) {
+export function Workspace({ initial, trends, stage, data }: { initial: Campaign; trends: TrendView[]; stage: StageId; data: StudioData }) {
   const [campaign, setCampaign] = useState(initial);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -87,7 +87,7 @@ export function Workspace({ initial, trends, stage }: { initial: Campaign; trend
   const next = STAGES[index + 1];
 
   return (
-    <WorkspaceContext.Provider value={{ campaign, trends, busy, run }}>
+    <WorkspaceContext.Provider value={{ campaign, trends, busy, run, ...data }}>
       <header className="mb-6">
         <Link href="/campaigns" className="text-sm text-muted hover:text-ink">
           Campaigns

@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
-import { accounts } from "@/data/accounts";
-import { brand } from "@/data/brand";
-import { saveCampaign } from "@/lib/repo";
+import { saveCampaign, getStudioData } from "@/lib/repo";
 import { createCampaignIn, type Campaign } from "@/lib/schemas";
 import { body, fail } from "@/lib/http";
 
 export async function POST(req: Request) {
   try {
     const input = createCampaignIn.parse(await body(req));
+    const { brand, accounts } = await getStudioData();
     const now = new Date().toISOString();
     const c: Campaign = {
       id: crypto.randomUUID().slice(0, 8),
