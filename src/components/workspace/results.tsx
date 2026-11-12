@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import clsx from "clsx";
 import { FlaskConical } from "lucide-react";
@@ -8,7 +7,7 @@ import { assetId, deliverables, sampleRows } from "@/lib/campaign";
 import { angleLabel, type Campaign, type ResultRow } from "@/lib/schemas";
 import { Button, inputClass } from "../button";
 import { Insights } from "./insights";
-import { useWorkspace } from "./workspace";
+import { StageLink, useWorkspace } from "./workspace";
 
 type Col = { key: keyof Omit<ResultRow, "conceptId">; label: string };
 
@@ -37,9 +36,9 @@ export function ResultsStage() {
       <div className="rounded-xl border border-dashed border-line bg-panel p-8">
         <h2 className="text-xl font-semibold">Nothing to measure yet</h2>
         <p className="mt-1 max-w-lg text-muted">Sign off the deliverables first. Results are added per signed-off concept once it has been posted.</p>
-        <Link href="?stage=signoff" scroll={false} className="press mt-4 inline-block rounded-md bg-ink px-4 py-2 text-sm font-medium text-inv hover:bg-ink/85">
+        <StageLink stage="signoff" className="press mt-4 inline-block rounded-md bg-ink px-4 py-2 text-sm font-medium text-inv hover:bg-ink/85">
           Go to sign-off
-        </Link>
+        </StageLink>
       </div>
     );
 

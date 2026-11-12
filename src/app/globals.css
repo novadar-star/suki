@@ -82,9 +82,9 @@ h3 {
   outline-offset: 2px;
 }
 
-/* Press feedback: 0.96 over 150ms. Disabled controls never scale. */
+/* Press feedback: 0.97 over 160ms on a strong ease-out. Disabled controls never scale. */
 .press {
-  transition: background-color 150ms ease-out, border-color 150ms ease-out, opacity 150ms ease-out;
+  transition: background-color 150ms var(--ease), border-color 150ms var(--ease), opacity 150ms var(--ease);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -97,14 +97,14 @@ dialog::backdrop {
 
 @media (prefers-reduced-motion: no-preference) {
   .press {
-    transition: transform 150ms ease-out, background-color 150ms ease-out, border-color 150ms ease-out, opacity 150ms ease-out;
+    transition: transform 160ms var(--ease), background-color 150ms var(--ease), border-color 150ms var(--ease), opacity 150ms var(--ease);
   }
   .press:not(:disabled):active {
-    transform: scale(0.96);
+    transform: scale(0.97);
   }
   /* The concept dialog opens rarely, so it gets one short entrance. */
   dialog[open] {
-    transition: opacity 200ms ease-out, transform 200ms cubic-bezier(0.2, 0, 0, 1);
+    transition: opacity 200ms var(--ease), transform 240ms var(--ease);
     @starting-style {
       opacity: 0;
       transform: translateY(12px) scale(0.98);
@@ -118,5 +118,16 @@ dialog::backdrop {
     @starting-style {
       opacity: 0;
     }
+  }
+}
+
+/* A stage switch is a content swap. A 140ms fade keeps it from feeling like a jump.
+   Opacity only, so it stays smooth and needs no reduced-motion change. */
+.stage-in {
+  animation: stage-in 140ms var(--ease);
+}
+@keyframes stage-in {
+  from {
+    opacity: 0;
   }
 }

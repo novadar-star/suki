@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import clsx from "clsx";
 import { useState } from "react";
 import { CircleCheck, OctagonX, TriangleAlert } from "lucide-react";
@@ -9,7 +8,7 @@ import { brandStamp } from "@/lib/checks";
 import { assetId, deliverables } from "@/lib/campaign";
 import { Button, inputClass } from "../button";
 import { Tag } from "../ui";
-import { useWorkspace } from "./workspace";
+import { StageLink, useWorkspace } from "./workspace";
 
 const kindLabel: Record<Finding["kind"], string> = {
   same_angle: "Same angle",
@@ -296,9 +295,9 @@ export function SignOffStage() {
       <div className="rounded-xl border border-dashed border-line bg-panel p-8">
         <h2 className="text-xl font-semibold">Run the review first</h2>
         <p className="mt-1 max-w-lg text-muted">Sign-off needs a review, so you can see which concepts pass before you pick the deliverables.</p>
-        <Link href="?stage=review" scroll={false} className="press mt-4 inline-block rounded-md bg-ink px-4 py-2 text-sm font-medium text-inv hover:bg-ink/85">
+        <StageLink stage="review" className="press mt-4 inline-block rounded-md bg-ink px-4 py-2 text-sm font-medium text-inv hover:bg-ink/85">
           Go to review
-        </Link>
+        </StageLink>
       </div>
     );
   return <SignOff />;
@@ -343,9 +342,9 @@ function SignOff() {
             <a href={`${url}/export`} className="press inline-flex min-h-9 items-center rounded-md border border-line bg-panel px-3.5 text-sm font-medium hover:border-ink/30">
               Export production pack
             </a>
-            <Link href="?stage=results" scroll={false} className="press inline-flex min-h-9 items-center rounded-md bg-ink px-3.5 text-sm font-medium text-inv hover:bg-ink/85">
+            <StageLink stage="results" className="press inline-flex min-h-9 items-center rounded-md bg-ink px-3.5 text-sm font-medium text-inv hover:bg-ink/85">
               Add results
-            </Link>
+            </StageLink>
             <Button variant="quiet" busy={busy === "reopen"} onClick={() => run("reopen", `${url}/signoff`, "DELETE")}>
               Reopen
             </Button>

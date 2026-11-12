@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import clsx from "clsx";
 import { Check } from "lucide-react";
 import { api } from "@/lib/client";
@@ -38,6 +38,8 @@ type Ctx = StudioData & {
   busy: string | null;
   // Runs a request, saves the returned campaign, and shows any error.
   run: (key: string, path: string, method: "POST" | "PATCH" | "DELETE", data?: unknown) => Promise<boolean>;
+  // Switches stage in the browser. No server trip, so the switch is instant.
+  go: (stage: StageId, toTop?: boolean) => void;
 };
 const WorkspaceContext = createContext<Ctx | null>(null);
 export const useWorkspace = () => useContext(WorkspaceContext)!;
@@ -63,11 +65,46 @@ function isDone(c: Campaign, id: StageId) {
   }
 }
 
+const valid = (s: string | null): StageId => (STAGES.some((x) => x.id === s) ? (s as StageId) : "brief");
+
+// A link to another stage. It keeps a real href, so open-in-new-tab still works.
+export function StageLink({ stage, className, children, toTop }: { stage: StageId; className?: string; children: React.ReactNode; toTop?: boolean }) {
+  const { go } = useWorkspace();
+  return (
+    <a
+      href={`?stage=${stage}`}
+      className={className}
+      onClick={(e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        go(stage, toTop);
+      }}
+    >
+      {children}
+    </a>
+  );
+}
+
 export function Workspace({ initial, trends, stage, data }: { initial: Campaign; trends: TrendView[]; stage: StageId; data: StudioData }) {
   const [campaign, setCampaign] = useState(initial);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const current = STAGES.some((s) => s.id === stage) ? stage : "brief";
+  const [current, setCurrent] = useState<StageId>(valid(stage));
+
+  // Back and forward buttons move between stages too.
+  useEffect(() => {
+    const onPop = () => setCurrent(valid(new URLSearchParams(window.location.search).get("stage")));
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  function go(s: StageId, toTop = false) {
+    if (s === current) return;
+    window.history.pushState(null, "", `?stage=${s}`);
+    setCurrent(s);
+    setError(null);
+    if (toTop) document.querySelector("main")?.scrollIntoView({ block: "start" });
+  }
 
   async function run(key: string, path: string, method: "POST" | "PATCH" | "DELETE", data?: unknown) {
     setBusy(key);
@@ -87,7 +124,7 @@ export function Workspace({ initial, trends, stage, data }: { initial: Campaign;
   const next = STAGES[index + 1];
 
   return (
-    <WorkspaceContext.Provider value={{ campaign, trends, busy, run, ...data }}>
+    <WorkspaceContext.Provider value={{ campaign, trends, busy, run, go, ...data }}>
       <header className="mb-6">
         <Link href="/campaigns" className="text-sm text-muted hover:text-ink">
           Campaigns
@@ -109,9 +146,13 @@ export function Workspace({ initial, trends, stage, data }: { initial: Campaign;
             const done = isDone(campaign, s.id);
             return (
               <li key={s.id}>
-                <Link
+                <a
                   href={`?stage=${s.id}`}
-                  scroll={false}
+                  onClick={(e) => {
+                    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+                    e.preventDefault();
+                    go(s.id);
+                  }}
                   aria-current={active ? "step" : undefined}
                   className={clsx(
                     "-mb-px flex items-center gap-2 border-b-2 px-3 py-2.5 text-sm",
@@ -127,7 +168,7 @@ export function Workspace({ initial, trends, stage, data }: { initial: Campaign;
                     {done && !active ? <Check aria-label="done" className="size-3" /> : String(i + 1).padStart(2, "0")}
                   </span>
                   {s.label}
-                </Link>
+                </a>
               </li>
             );
           })}
@@ -138,6 +179,7 @@ export function Workspace({ initial, trends, stage, data }: { initial: Campaign;
         <ErrorNote message={error} />
       </div>
 
+      <div key={current} className="stage-in">
       {current === "brief" && <BriefStage />}
       {current === "accounts" && <AccountsStage />}
       {current === "trends" && <TrendsStage />}
@@ -146,12 +188,13 @@ export function Workspace({ initial, trends, stage, data }: { initial: Campaign;
       {current === "review" && <ReviewStage />}
       {current === "signoff" && <SignOffStage />}
       {current === "results" && <ResultsStage />}
+      </div>
 
       {next && (
         <div className="mt-10 border-t border-line pt-5">
-          <Link href={`?stage=${next.id}`} className="press inline-block rounded-md border border-line bg-panel px-4 py-2 text-sm font-medium hover:border-ink/30">
+          <StageLink stage={next.id} toTop className="press inline-block rounded-md border border-line bg-panel px-4 py-2 text-sm font-medium hover:border-ink/30">
             Next: {next.label}
-          </Link>
+          </StageLink>
         </div>
       )}
     </WorkspaceContext.Provider>
