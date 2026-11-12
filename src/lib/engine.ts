@@ -1,14 +1,14 @@
 import "server-only";
-import { accounts } from "@/data/accounts";
 import { aiMode, generateJson } from "./ai";
 import { adaptForPaid, adaptPlaybookForPaid, demoConcepts, demoPlaybook, demoRevision, demoTrendAnalysis, DEMO_TREND_SAMPLE } from "./demo";
 import { SYSTEM, conceptsPrompt, findingInstruction, playbookPrompt, regeneratePrompt, trendAnalysisPrompt } from "./prompts";
-import { getTrends } from "./repo";
+import { getStudioData, getTrends } from "./repo";
+import type { Account } from "./types";
 import { conceptOut, conceptsOut, playbookOut, trendAnalysisOut, type Campaign, type Concept, type Playbook } from "./schemas";
 
 export class EngineError extends Error {}
 
-const account = (id: string) => {
+const account = (accounts: Account[], id: string) => {
   const a = accounts.find((x) => x.id === id);
   if (!a) throw new EngineError(`Unknown account ${id}.`);
   return a;
@@ -24,12 +24,13 @@ async function selectedTrends(c: Campaign) {
 const newId = () => crypto.randomUUID().slice(0, 8);
 
 export async function makePlaybook(c: Campaign, accountId: string): Promise<Playbook> {
-  const a = account(accountId);
+  const data = await getStudioData();
+  const a = account(data.accounts, accountId);
   const trends = await selectedTrends(c);
   const others = c.playbooks.filter((p) => p.accountId !== accountId && p.status !== "rejected");
   const out =
     aiMode === "live"
-      ? await generateJson({ system: SYSTEM, prompt: playbookPrompt(c, a, trends, others), schema: playbookOut })
+      ? await generateJson({ system: SYSTEM, prompt: playbookPrompt(c, a, trends, others, data.brand), schema: playbookOut })
       : c.objectiveType === "paid"
         ? adaptPlaybookForPaid(demoPlaybook(a, trends))
         : demoPlaybook(a, trends);
@@ -38,7 +39,8 @@ export async function makePlaybook(c: Campaign, accountId: string): Promise<Play
 }
 
 export async function makeConcepts(c: Campaign, accountId: string): Promise<Concept[]> {
-  const a = account(accountId);
+  const data = await getStudioData();
+  const a = account(data.accounts, accountId);
   const p = c.playbooks.find((x) => x.accountId === accountId && x.status === "approved");
   if (!p) throw new EngineError(`Approve the ${a.name} playbook first.`);
   const trend = (await getTrends()).find((t) => t.id === p.trendId);
@@ -46,7 +48,7 @@ export async function makeConcepts(c: Campaign, accountId: string): Promise<Conc
   const otherHooks = c.concepts.filter((x) => x.accountId !== accountId && x.status !== "rejected").map((x) => x.hook);
   const out =
     aiMode === "live"
-      ? (await generateJson({ system: SYSTEM, prompt: conceptsPrompt(c, a, p, trend, otherHooks), schema: conceptsOut })).concepts
+      ? (await generateJson({ system: SYSTEM, prompt: conceptsPrompt(c, a, p, trend, otherHooks, data.brand), schema: conceptsOut })).concepts
       : demoConcepts(a, trend).map((x) => (c.objectiveType === "paid" ? adaptForPaid(x) : x));
   return out.map((x) => ({ ...x, id: newId(), accountId, trendId: trend.id, status: "draft", origin: aiMode === "live" ? "ai" : "demo" }));
 }
@@ -54,7 +56,8 @@ export async function makeConcepts(c: Campaign, accountId: string): Promise<Conc
 export async function remakeConcept(c: Campaign, conceptId: string, findingId?: string): Promise<Concept> {
   const current = c.concepts.find((x) => x.id === conceptId);
   if (!current) throw new EngineError("Concept not found.");
-  const a = account(current.accountId);
+  const data = await getStudioData();
+  const a = account(data.accounts, current.accountId);
   const trend = (await getTrends()).find((t) => t.id === current.trendId);
   if (!trend) throw new EngineError("The concept's trend no longer exists.");
   const finding = findingId ? c.report?.findings.find((f) => f.id === findingId) : undefined;
@@ -63,7 +66,7 @@ export async function remakeConcept(c: Campaign, conceptId: string, findingId?: 
     aiMode === "live"
       ? await generateJson({
           system: SYSTEM,
-          prompt: regeneratePrompt(c, a, trend, current, siblings, finding && findingInstruction(finding)),
+          prompt: regeneratePrompt(c, a, trend, current, siblings, finding && findingInstruction(finding), data.brand),
           schema: conceptOut,
         })
       : (() => {

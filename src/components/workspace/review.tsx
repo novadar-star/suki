@@ -4,7 +4,6 @@ import Link from "next/link";
 import clsx from "clsx";
 import { useState } from "react";
 import { CircleCheck, OctagonX, TriangleAlert } from "lucide-react";
-import { accounts } from "@/data/accounts";
 import { angleLabel, objectiveTypeInfo, type Finding } from "@/lib/schemas";
 import { assetId, deliverables } from "@/lib/campaign";
 import { Button, inputClass } from "../button";
@@ -132,7 +131,7 @@ function Excerpt({ text, matches }: { text: string; matches: string[] }) {
 }
 
 function FindingRow({ f }: { f: Finding }) {
-  const { campaign, busy, run } = useWorkspace();
+  const { campaign, busy, run, accounts } = useWorkspace();
   const [overriding, setOverriding] = useState(false);
   const [reason, setReason] = useState("");
   // For a pair, rewrite the later concept and keep the first one.
@@ -246,7 +245,7 @@ export function SignOffStage() {
 }
 
 function SignOff() {
-  const { campaign, busy, run } = useWorkspace();
+  const { campaign, busy, run, accounts } = useWorkspace();
   const url = `/api/campaigns/${campaign.id}`;
   const live = campaign.concepts.filter((c) => c.status !== "rejected");
   const approved = deliverables(campaign);

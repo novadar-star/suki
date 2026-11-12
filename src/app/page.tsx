@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { brand } from "@/data/brand";
-import { getCampaigns } from "@/lib/repo";
+import { getBrand, getCampaigns } from "@/lib/repo";
 import { fmtDate, PageHeader, Tag } from "@/components/ui";
 import { StatusPill } from "@/components/status-pill";
 import { ResetDemo } from "@/components/reset-demo";
@@ -10,7 +9,7 @@ import { objectiveTypeInfo } from "@/lib/schemas";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const campaigns = await getCampaigns();
+  const [campaigns, brand] = await Promise.all([getCampaigns(), getBrand()]);
   return (
     <>
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">

@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import clsx from "clsx";
 import { ArrowRight } from "lucide-react";
-import { accounts } from "@/data/accounts";
 import { api } from "@/lib/client";
 import { analyze, assetId, MIN_ASSETS, MIN_VOLUME } from "@/lib/campaign";
 import { angleLabel, type Campaign } from "@/lib/schemas";
@@ -14,11 +13,11 @@ import { useWorkspace } from "./workspace";
 
 // Results by Asset ID, the Analyst's draft insights, and the next round.
 export function Insights({ onEdit }: { onEdit: () => void }) {
-  const { campaign, busy, run } = useWorkspace();
+  const { campaign, busy, run, accounts } = useWorkspace();
   const router = useRouter();
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const a = analyze(campaign);
+  const a = analyze(campaign, accounts);
   const sample = campaign.results?.source === "sample";
   const unit = campaign.objectiveType === "paid" ? "impressions" : "views";
   const max = Math.max(...a.ranked.map((r) => r.primary), 0.0001);

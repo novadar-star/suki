@@ -284,3 +284,27 @@ export const evidenceIn = z.object({
   url: z.string().trim().url().optional().or(z.literal("").transform(() => undefined)),
   observedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 });
+
+// Lists arrive as text with one item per line.
+const lines = z
+  .string()
+  .default("")
+  .transform((s) => s.split(/\r?\n/).map((x) => x.trim()).filter(Boolean));
+const text = (label: string, max = 200) => z.string().trim().min(1, `${label} is required.`).max(max, `${label} is too long.`);
+
+export const accountIn = z.object({
+  name: text("Name", 60),
+  handle: text("Handle", 60).transform((h) => (h.startsWith("@") ? h : `@${h}`)),
+  platform: z.enum(["Instagram", "TikTok"]),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Pick a colour."),
+  audience: text("Audience"),
+  editorialIdentity: text("What the account is about"),
+  voice: text("Voice"),
+  visualDirection: text("Look"),
+  pillars: lines.refine((a) => a.length > 0, "Add at least one topic."),
+  formats: lines.refine((a) => a.length > 0, "Add at least one format."),
+  painPoints: lines,
+  interests: lines,
+  restrictions: lines,
+});
+export type AccountIn = z.infer<typeof accountIn>;

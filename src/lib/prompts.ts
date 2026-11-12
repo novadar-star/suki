@@ -1,4 +1,5 @@
-import { brand } from "@/data/brand";
+import { seedData } from "@/data/seed";
+import type { Brand } from "./types";
 import { confidenceLabel, confidenceOf } from "./confidence";
 import { ANGLES, FORMATS, objectiveTypeInfo, type Campaign, type Concept, type Finding, type Playbook } from "./schemas";
 import type { Account, Trend } from "./types";
@@ -15,7 +16,7 @@ Hard rules:
 - Put each required disclaimer in the on-screen text of the last scene.
 - Write in the account's voice. Keep lines short and natural to say out loud.`;
 
-export function brandContext() {
+export function brandContext(brand: Brand = seedData.brand) {
   const g = brand.guidelines;
   return `BRAND: ${brand.name}. ${brand.description}
 PRODUCT: ${brand.product.name}. ${brand.product.description} Size ${brand.product.size}.
@@ -75,8 +76,8 @@ Feeling: ${a.emotionalTrigger}
 Product fit: ${a.productIntegration}`;
 }
 
-export function playbookPrompt(c: Campaign, account: Account, trends: Trend[], others: Playbook[]) {
-  return `${brandContext()}
+export function playbookPrompt(c: Campaign, account: Account, trends: Trend[], others: Playbook[], brand?: Brand) {
+  return `${brandContext(brand)}
 
 ${campaignContext(c)}
 
@@ -96,8 +97,8 @@ Task: Pick the one selected trend that fits this account best and write a creati
 - "safetyNotes" lists brand rules this playbook must watch.`;
 }
 
-export function conceptsPrompt(c: Campaign, account: Account, p: Playbook, trend: Trend, otherHooks: string[]) {
-  return `${brandContext()}
+export function conceptsPrompt(c: Campaign, account: Account, p: Playbook, trend: Trend, otherHooks: string[], brand?: Brand) {
+  return `${brandContext(brand)}
 
 ${campaignContext(c)}
 
@@ -125,8 +126,8 @@ Task: Write 3 video concepts for this account based on the playbook.
 - "differentiation" says in one sentence how this concept differs from the other two.`;
 }
 
-export function regeneratePrompt(c: Campaign, account: Account, trend: Trend, current: Concept, siblings: Concept[], instruction?: string) {
-  return `${brandContext()}
+export function regeneratePrompt(c: Campaign, account: Account, trend: Trend, current: Concept, siblings: Concept[], instruction?: string, brand?: Brand) {
+  return `${brandContext(brand)}
 
 ${campaignContext(c)}
 

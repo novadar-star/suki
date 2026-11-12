@@ -1,4 +1,5 @@
-import { accounts } from "@/data/accounts";
+import { seedData } from "@/data/seed";
+import type { Account } from "./types";
 import { angleLabel, type Campaign, type CampaignStatus, type Concept, type Insight, type InsightDimension, type ResultRow } from "./schemas";
 
 // Older saved campaigns were made before these fields existed.
@@ -94,13 +95,12 @@ export type Analysis = {
   metric: string;
 };
 
-const accName = (id: string) => accounts.find((a) => a.id === id)?.name ?? id;
 const dimLabel: Record<InsightDimension, string> = { account: "account", angle: "angle", format: "format" };
-const keyOf: Record<InsightDimension, (k: Concept) => string> = {
-  account: (k) => accName(k.accountId),
+const keysFor = (accounts: Account[]): Record<InsightDimension, (k: Concept) => string> => ({
+  account: (k) => accounts.find((a) => a.id === k.accountId)?.name ?? k.accountId,
   angle: (k) => angleLabel[k.angleType],
   format: (k) => k.format,
-};
+});
 
 export function scoreAll(c: Campaign): Scored[] {
   if (!c.results) return [];
@@ -115,7 +115,8 @@ export function scoreAll(c: Campaign): Scored[] {
 
 // Plain rules on the numbers the team entered. No AI and no outside data.
 // A pattern is only stated when two groups each clear the PI-04 thresholds.
-export function analyze(c: Campaign): Analysis {
+export function analyze(c: Campaign, accounts: Account[] = seedData.accounts): Analysis {
+  const keyOf = keysFor(accounts);
   const ranked = scoreAll(c);
   const paid = c.objectiveType === "paid";
   const metric = paid ? "ROAS" : "average watched %";

@@ -2,8 +2,7 @@ import path from "path";
 import { promises as fs } from "fs";
 import os from "os";
 import { NextResponse } from "next/server";
-import { accounts } from "@/data/accounts";
-import { getCampaign } from "@/lib/repo";
+import { getCampaign, getAccounts } from "@/lib/repo";
 import { fail, notFound } from "@/lib/http";
 
 export const maxDuration = 300;
@@ -18,7 +17,7 @@ export async function POST(_req: Request, { params }: Ctx) {
     const c = await getCampaign(id);
     const concept = c?.concepts.find((x) => x.id === cid);
     if (!c || !concept) return notFound("Concept");
-    const account = accounts.find((a) => a.id === concept.accountId);
+    const account = (await getAccounts()).find((a) => a.id === concept.accountId);
     if (!account) return notFound("Account");
 
     const { bundle } = await import("@remotion/bundler");

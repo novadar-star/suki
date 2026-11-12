@@ -1,6 +1,4 @@
-import { accounts } from "@/data/accounts";
-import { brand } from "@/data/brand";
-import { getCampaign, getTrends } from "@/lib/repo";
+import { getCampaign, getTrends, getStudioData } from "@/lib/repo";
 import { angleLabel, objectiveTypeInfo } from "@/lib/schemas";
 import { notFound } from "@/lib/http";
 import { assetId } from "@/lib/campaign";
@@ -13,6 +11,7 @@ export async function GET(_req: Request, { params }: Ctx) {
   const c = await getCampaign(id);
   if (!c) return notFound("Campaign");
   const trends = await getTrends();
+  const { brand, accounts } = await getStudioData();
   const approved = c.concepts.filter((x) => x.status === "approved");
   const list = approved.length ? approved : c.concepts.filter((x) => x.status !== "rejected");
 
