@@ -22,7 +22,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <div className="mx-auto flex min-h-screen max-w-[1280px] flex-col md:flex-row">
           <aside className="flex shrink-0 flex-col gap-6 border-line p-4 md:sticky md:top-0 md:h-screen md:w-56 md:border-r md:p-6">
-            <Link href="/campaigns" className="flex items-center gap-2.5 font-display text-2xl font-semibold tracking-tight">
+            {/* The logo goes to the home (landing) page; the Campaigns nav item goes to the campaigns list. */}
+            <Link
+              href="/"
+              aria-label="Suki home"
+              title="Back to Suki home"
+              className="press flex items-center gap-2.5 rounded-md font-display text-2xl font-semibold tracking-tight hover:opacity-80"
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/suki-icon.png" alt="" width={28} height={28} className="size-7" style={{ borderRadius: "var(--r-icon)" }} />
               Suki
