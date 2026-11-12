@@ -11,7 +11,7 @@ export async function GET(_req: Request, { params }: Ctx) {
   const c = await getCampaign(id);
   if (!c) return notFound("Campaign");
   const trends = await getTrends();
-  const { brand, accounts } = await getStudioData();
+  const { brand, accounts } = await getStudioData(c.brandId);
   const approved = c.concepts.filter((x) => x.status === "approved");
   const list = approved.length ? approved : c.concepts.filter((x) => x.status !== "rejected");
 

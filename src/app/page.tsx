@@ -9,7 +9,9 @@ import { objectiveTypeInfo } from "@/lib/schemas";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [campaigns, brand] = await Promise.all([getCampaigns(), getBrand()]);
+  const campaigns = await getCampaigns();
+  const ids = [...new Set(campaigns.map((c) => c.brandId))];
+  const brands = new Map(await Promise.all(ids.map(async (id) => [id, await getBrand(id)] as const)));
   return (
     <>
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
@@ -39,7 +41,7 @@ export default async function Home() {
                 <div className="min-w-0 flex-1">
                   <h2 className="text-lg font-semibold">{c.name}</h2>
                   <p className="text-muted">
-                    {brand.name}, {brand.product.name}
+                    {brands.get(c.brandId)?.name}, {brands.get(c.brandId)?.product.name}
                     {c.concepts.length ? ` · ${c.concepts.filter((x) => x.status === "approved").length} of ${c.concepts.length} concepts approved` : ""}
                   </p>
                 </div>

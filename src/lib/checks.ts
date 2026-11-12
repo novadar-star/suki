@@ -70,8 +70,9 @@ function locate(c: Concept, pattern: RegExp) {
 
 export const ruleId = (prefix: "P" | "W" | "D", i: number) => `${prefix}-${String(i + 1).padStart(2, "0")}`;
 
-// Words that show the product is on screen or named.
-const PRODUCT = /\b(serum|bottle|dropper|lust minerals|4d|hyaluronic)\b/i;
+// Words that show the product is on screen or named: the sample serum's words plus the brand and product names.
+const productPattern = (b: Brand) =>
+  new RegExp(`\\b(serum|bottle|dropper|lust minerals|4d|hyaluronic|${[b.name, b.product.name].map(escapeRe).join("|")})\\b`, "i");
 const ACTION_CTA = /\b(shop|buy|get yours|order|tap|link|try it|add to cart)\b/i;
 const HARD_SELL = /\b(buy now|shop now|order now|discount|sale|% off|limited time|use code)\b/i;
 
@@ -201,7 +202,7 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
         add({
           severity: "fix",
           kind: "unsupported_claim",
-          rule: "Brand Brain: claims must match an approved claim ID (F-01 to F-05, C-01 to C-04)",
+          rule: "Brand Brain: claims must match an approved product fact (F) or marketing claim (C)",
           excerpt: { text: claim, matches: [claim] },
           conceptIds: [c.id],
           message: `"${c.title}" relies on "${claim}", which is not a product fact or approved claim.`,
@@ -224,7 +225,7 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
   for (const c of live) {
     if (objectiveType === "paid") {
       const early = c.scenes.slice(0, 2).map((s) => `${s.visual} ${s.voiceover} ${s.onScreen}`).join(" ");
-      if (!PRODUCT.test(early))
+      if (!productPattern(brand).test(early))
         add({
           severity: "fix",
           kind: "paid_late_product",
@@ -232,7 +233,7 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
           excerpt: { text: c.scenes[0].visual, matches: [] },
           conceptIds: [c.id],
           message: `"${c.title}" does not show or name the product in the first two scenes. Paid viewers decide in about two seconds.`,
-          suggestion: "Put the serum on screen in scene 1 or 2.",
+          suggestion: "Put the product on screen in scene 1 or 2.",
         });
       if (!ACTION_CTA.test(c.cta))
         add({

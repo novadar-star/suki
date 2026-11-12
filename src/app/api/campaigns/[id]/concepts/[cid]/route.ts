@@ -17,7 +17,7 @@ export async function POST(req: Request, { params }: Ctx) {
     const { findingId } = input.parse(await body(req));
     const fresh = await remakeConcept(c, cid, findingId);
     const concepts = c.concepts.map((x) => (x.id === cid ? fresh : x));
-    const next = { ...c, concepts, report: c.report ? runChecks(concepts, c.objectiveType, await getStudioData()) : null, signedOffAt: null, results: null };
+    const next = { ...c, concepts, report: c.report ? runChecks(concepts, c.objectiveType, await getStudioData(c.brandId)) : null, signedOffAt: null, results: null };
     return NextResponse.json(await saveCampaign(next));
   } catch (e) {
     return fail(e);

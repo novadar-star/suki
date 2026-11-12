@@ -29,9 +29,11 @@ export const getCampaign = async (id: string) => {
 export const saveCampaign = (c: Campaign) => putDoc("campaign", c.id, { ...c, updatedAt: new Date().toISOString() });
 
 // The brand and the accounts start from the seed in code. The first edit saves a copy, and saved copies win from then on.
-export async function getBrand(): Promise<Brand> {
-  return (await getDoc<Brand>("brand", seedData.brand.id)) ?? seedData.brand;
+// The sample client lives in code. Clients made from a brief are saved by their own id.
+export async function getBrand(id: string = seedData.brand.id): Promise<Brand> {
+  return (await getDoc<Brand>("brand", id)) ?? seedData.brand;
 }
+export const saveNewBrand = (b: Brand) => putDoc("brand", b.id, b);
 export const saveBrand = (b: Brand) => putDoc("brand", seedData.brand.id, { ...b, id: seedData.brand.id });
 
 export async function getAccounts(): Promise<Account[]> {
@@ -55,7 +57,8 @@ export async function removeAccount(id: string) {
   await deleteDoc("account", id);
 }
 
-export async function getStudioData(): Promise<StudioData> {
-  const [brand, accounts] = await Promise.all([getBrand(), getAccounts()]);
+// Pass the campaign's brandId so its checks and prompts use its own client.
+export async function getStudioData(brandId?: string): Promise<StudioData> {
+  const [brand, accounts] = await Promise.all([getBrand(brandId), getAccounts()]);
   return { brand, accounts };
 }

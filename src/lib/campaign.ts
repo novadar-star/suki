@@ -35,7 +35,8 @@ export const deliverables = (c: Campaign) => c.concepts.filter((x) => x.status =
 // across campaigns.
 export function assetId(c: Campaign, conceptId: string) {
   const n = c.concepts.findIndex((x) => x.id === conceptId) + 1;
-  return `LM-HA4D-${c.id.slice(0, 4).toUpperCase()}-C${String(n).padStart(2, "0")}-S01-V1`;
+  const client = c.brandId === seedData.brand.id ? "LM-HA4D" : c.brandId.replace(/[^a-z0-9]/gi, "").slice(0, 6).toUpperCase();
+  return `${client}-${c.id.slice(0, 4).toUpperCase()}-C${String(n).padStart(2, "0")}-S01-V1`;
 }
 
 // ---------- Results ----------
