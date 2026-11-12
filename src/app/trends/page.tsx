@@ -15,7 +15,7 @@ export default async function TrendsPage() {
           title="Trend references"
           intro="Suki has no live trend data. Each format shows the evidence behind it. Formats with no recent evidence are reference examples."
         />
-        <Link href="/trends/new" className="press rounded-md bg-ink px-4 py-2 text-sm font-medium text-white hover:bg-ink/85">
+        <Link href="/trends/new" className="press rounded-md bg-ink px-4 py-2 text-sm font-medium text-inv hover:bg-ink/85">
           Add a reference
         </Link>
       </div>

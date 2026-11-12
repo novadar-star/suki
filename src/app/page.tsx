@@ -17,7 +17,7 @@ export default async function Home() {
         <PageHeader title="Campaigns" />
         <div className="mb-8 flex items-start gap-2">
           <ResetDemo />
-          <Link href="/campaigns/new" className="press rounded-md bg-ink px-4 py-2 text-sm font-medium text-white hover:bg-ink/85">
+          <Link href="/campaigns/new" className="press rounded-md bg-ink px-4 py-2 text-sm font-medium text-inv hover:bg-ink/85">
             New campaign
           </Link>
         </div>
@@ -28,7 +28,7 @@ export default async function Home() {
           <p className="mt-1 max-w-lg text-muted">
             Write a brief, pick references, and Suki drafts a different playbook and concepts for each account. Every concept is checked against the Brand Brain before a person signs it off.
           </p>
-          <Link href="/campaigns/new" className="press mt-5 inline-block rounded-md bg-ink px-4 py-2 text-sm font-medium text-white">
+          <Link href="/campaigns/new" className="press mt-5 inline-block rounded-md bg-ink px-4 py-2 text-sm font-medium text-inv hover:bg-ink/85">
             New campaign
           </Link>
         </div>

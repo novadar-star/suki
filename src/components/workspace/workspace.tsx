@@ -11,7 +11,7 @@ import { ErrorNote } from "../button";
 import { AccountsStage, BriefStage, TrendsStage } from "./setup-stages";
 import { PlaybooksStage } from "./playbooks";
 import { ContentStage } from "./content";
-import { ReviewStage } from "./review";
+import { ReviewStage, SignOffStage } from "./review";
 import { ResultsStage } from "./results";
 import { StatusPill } from "../status-pill";
 import { objectiveTypeInfo } from "@/lib/schemas";
@@ -23,10 +23,11 @@ export type TrendView = Trend & { confidence: Confidence };
 const STAGES = [
   { id: "brief", label: "Brief" },
   { id: "accounts", label: "Accounts" },
-  { id: "trends", label: "Trends" },
+  { id: "trends", label: "References" },
   { id: "playbooks", label: "Playbooks" },
-  { id: "content", label: "Content" },
-  { id: "review", label: "Review & sign-off" },
+  { id: "content", label: "Concepts" },
+  { id: "review", label: "Review" },
+  { id: "signoff", label: "Sign-off" },
   { id: "results", label: "Results" },
 ] as const;
 export type StageId = (typeof STAGES)[number]["id"];
@@ -54,6 +55,8 @@ function isDone(c: Campaign, id: StageId) {
     case "content":
       return c.concepts.length > 0;
     case "review":
+      return !!c.report && c.report.findings.every((f) => f.severity !== "fix");
+    case "signoff":
       return !!c.signedOffAt;
     case "results":
       return !!c.results;
@@ -89,7 +92,7 @@ export function Workspace({ initial, trends, stage }: { initial: Campaign; trend
         <Link href="/campaigns" className="text-sm text-muted hover:text-ink">
           Campaigns
         </Link>
-        <h1 className="mt-1 text-3xl font-bold">{campaign.name}</h1>
+        <h1 className="mt-1 text-3xl font-semibold">{campaign.name}</h1>
         <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-muted">
           <StatusPill status={statusOf(campaign)} />
           <Tag tone="ink">{objectiveTypeInfo[campaign.objectiveType].label}</Tag>
@@ -117,11 +120,11 @@ export function Workspace({ initial, trends, stage }: { initial: Campaign; trend
                 >
                   <span
                     className={clsx(
-                      "grid size-5 place-items-center rounded-full text-[11px]",
-                      done && !active ? "bg-ink text-white" : "border border-line",
+                      "grid size-5 place-items-center rounded-full font-mono text-[10px]",
+                      done && !active ? "bg-ink text-inv" : "border border-line",
                     )}
                   >
-                    {done && !active ? <Check aria-label="done" className="size-3" /> : i + 1}
+                    {done && !active ? <Check aria-label="done" className="size-3" /> : String(i + 1).padStart(2, "0")}
                   </span>
                   {s.label}
                 </Link>
@@ -141,6 +144,7 @@ export function Workspace({ initial, trends, stage }: { initial: Campaign; trend
       {current === "playbooks" && <PlaybooksStage />}
       {current === "content" && <ContentStage />}
       {current === "review" && <ReviewStage />}
+      {current === "signoff" && <SignOffStage />}
       {current === "results" && <ResultsStage />}
 
       {next && (

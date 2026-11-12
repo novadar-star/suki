@@ -42,7 +42,7 @@ export function Insights({ onEdit }: { onEdit: () => void }) {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="text-xl font-semibold">Results by asset</h2>
-          {sample ? <Tag tone="accent">Demo data: sample numbers, not real results</Tag> : <Tag>Entered by the team</Tag>}
+          {sample ? <Tag tone="warn">Demo data: sample numbers, not real results</Tag> : <Tag>Entered by the team</Tag>}
           <Tag>Sorted by {a.metric}</Tag>
         </div>
         <Button variant="quiet" onClick={onEdit}>
@@ -61,7 +61,7 @@ export function Insights({ onEdit }: { onEdit: () => void }) {
                   {acc?.name} · {angleLabel[r.concept.angleType]} · {r.concept.format}
                   <code className="rounded bg-paper px-1.5 py-0.5 font-mono text-[11px] text-ink">{assetId(campaign, r.concept.id)}</code>
                   {!r.enoughVolume && (
-                    <Tag tone="accent">
+                    <Tag tone="warn">
                       Under {MIN_VOLUME.toLocaleString("en-US")} {unit}, not analyzed
                     </Tag>
                   )}
@@ -97,11 +97,11 @@ export function Insights({ onEdit }: { onEdit: () => void }) {
                 key={i.id}
                 className={clsx(
                   "rounded-xl border bg-panel p-5",
-                  i.status === "accepted" ? "border-[#11704f]/50" : i.status === "dismissed" ? "border-line opacity-60" : "border-ink",
+                  i.status === "accepted" ? "border-ok/50" : i.status === "dismissed" ? "border-line opacity-60" : "border-accent",
                 )}
               >
                 <div className="flex flex-wrap items-center gap-2">
-                  <Tag tone={i.status === "accepted" ? "ink" : "plain"}>
+                  <Tag tone={i.status === "accepted" ? "ok" : "plain"}>
                     {i.status === "accepted" ? "Accepted" : i.status === "dismissed" ? "Dismissed" : "Draft insight"}
                   </Tag>
                   <span className="text-xs text-muted">
