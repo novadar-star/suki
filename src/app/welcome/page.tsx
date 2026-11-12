@@ -8,8 +8,8 @@ const onest = Onest({ subsets: ["latin"], weight: ["400", "500", "600"], variabl
 const sometype = Sometype_Mono({ subsets: ["latin"], weight: ["400", "500"], style: ["normal", "italic"], variable: "--font-sometype" });
 
 export const metadata: Metadata = {
-  title: "Suki — one brief, every account, your sign-off",
-  description: "Suki ghostwrites a playbook and concepts for each account from one brief, checks every line against what the brand may say, and waits for a person to sign.",
+  title: "Suki: one campaign, a different idea for every account",
+  description: "Suki turns one client campaign into a separate creative direction for each account you run. It checks the ideas against each other and every claim against what the brand approved.",
 };
 
 function Mark({ size }: { size: number }) {
@@ -20,6 +20,14 @@ function Mark({ size }: { size: number }) {
     </span>
   );
 }
+
+const FAQ: [string, string][] = [
+  ["Can't I just do this with ChatGPT?", "ChatGPT writes one post at a time. It doesn't know about your other accounts. Suki sees the whole portfolio, so it can tell when two accounts are about to say the same thing."],
+  ["Does it pull live trends from Instagram?", "No. It works from trend references your team adds or picks. Each one shows its dated proof. Suki labels what was actually seen and what it guessed."],
+  ["Could a bad claim get my client in trouble?", "Every line is checked against the client's approved claims. Anything stronger gets flagged. A person approves every idea before it's final."],
+  ["Does it make the videos or post them?", "It writes the concepts, hooks, scripts and storyboards. Video depends on the tools and footage you give it. It doesn't post for you yet."],
+  ["Will it get us more views?", "No tool can promise that. Suki makes sure each account brings a different idea. Your results show which ideas won, and those lessons go into the next round."],
+];
 
 // All product content below is the demo workspace's sample data (Lust Minerals 4D Hyaluronic Acid Serum).
 export default function Welcome() {
@@ -33,8 +41,7 @@ export default function Welcome() {
           </Link>
           <nav className="wl-links" aria-label="Sections">
             <a href="#how">How it works</a>
-            <a href="#inside">What&apos;s inside</a>
-            <a href="#limits">Limits</a>
+            <a href="#faq">FAQ</a>
           </nav>
           <Link href="/campaigns" className="wl-btn">
             Open workspace
@@ -44,19 +51,19 @@ export default function Welcome() {
 
       <section className="wl-hero">
         <div className="wl-in">
-          <span className="wl-pill wl-mono">Ghostwritten by Suki · Signed by you</span>
           <h1>
-            One brief<i className="d1">.</i> Every account<i className="d2">.</i> Your sign-off<i className="d3">.</i>
+            One campaign<i className="d1">.</i> A different idea for every account<i className="d2">.</i>
           </h1>
-          <p className="wl-sub">Suki drafts a playbook and concepts for each account, checks every line against what the brand may say, and waits for a person to sign.</p>
+          <p className="wl-sub">Suki turns one client campaign into a separate creative direction for each account you run. It checks the ideas against each other. It checks every claim against what the brand approved.</p>
           <div className="wl-cta">
             <Link href="/campaigns" className="wl-btn lg">
               Open the workspace <span aria-hidden="true">›</span>
             </Link>
-            <span className="wl-fine">Demo workspace · sample data · no account needed</span>
+            <a href="#sample" className="wl-link">See a sample campaign</a>
+            <span className="wl-fine">Sample data. No sign-up.</span>
           </div>
 
-          <div className="wl-win">
+          <div className="wl-win" id="sample">
             <input type="radio" name="wl-tab" id="wl-t1" defaultChecked />
             <input type="radio" name="wl-tab" id="wl-t2" />
             <input type="radio" name="wl-tab" id="wl-t3" />
@@ -97,14 +104,13 @@ export default function Welcome() {
                 <div className="wl-check">
                   <span className="wl-st warn">Needs a fix</span>
                   <span>
-                    Script says “<del>instantly plumps your skin</del>”. Approved wording: <ins>helps instantly plump the appearance of dehydrated skin</ins>.
+                    Says “<del>instantly plumps your skin</del>.” Approved: “<ins>helps instantly plump the appearance of dehydrated skin</ins>.”
                   </span>
                 </div>
                 <div className="wl-acts">
-                  <span className="wl-chip ink">Apply suggested fix</span>
+                  <span className="wl-chip ink">Apply fix</span>
                   <span className="wl-chip">Request changes</span>
                 </div>
-                <span className="wl-fine">Drafted by Suki. A person approves every concept.</span>
               </div>
             </div>
 
@@ -154,52 +160,18 @@ export default function Welcome() {
       </section>
 
       <section className="wl-sec">
-        <div className="wl-in">
-          <span className="wl-kick wl-mono">Why teams use it</span>
-          <h2>The same product, without the same caption everywhere</h2>
-          <div className="wl-vs">
-            <div className="no">
-              <h3>Without Suki</h3>
-              <ul>
-                <li>
-                  <span className="wl-ic x" aria-hidden="true">×</span>One caption pasted across every account
-                </li>
-                <li>
-                  <span className="wl-ic x" aria-hidden="true">×</span>Claims checked from memory
-                </li>
-                <li>
-                  <span className="wl-ic x" aria-hidden="true">×</span>Approvals scattered across chat threads
-                </li>
-                <li>
-                  <span className="wl-ic x" aria-hidden="true">×</span>Nobody is sure what stage a campaign is in
-                </li>
-              </ul>
-            </div>
-            <div className="yes">
-              <h3>With Suki</h3>
-              <ul>
-                <li>
-                  <span className="wl-ic v" aria-hidden="true">✓</span>A playbook for each account, in its own voice
-                </li>
-                <li>
-                  <span className="wl-ic v" aria-hidden="true">✓</span>Every line checked against the approved claims
-                </li>
-                <li>
-                  <span className="wl-ic v" aria-hidden="true">✓</span>One review queue, and blocked claims can&apos;t be approved
-                </li>
-                <li>
-                  <span className="wl-ic v" aria-hidden="true">✓</span>Eight stages, with the current one always marked
-                </li>
-              </ul>
-            </div>
-          </div>
+        <div className="wl-in wl-prose">
+          <h2>Same product. Same hook. Nine profile pictures.</h2>
+          <p>You run a portfolio of accounts. Each one has its own audience and its own voice. Then a client campaign lands.</p>
+          <p>The product goes out to every account. Hooks get recycled. A trend gets copied because it worked last week. By the end of the month your accounts sound like one account wearing different profile pictures.</p>
+          <p>Followers notice. So do clients.</p>
+          <p className="wl-strong">The hard part was never making more content. It&apos;s deciding what each account should make.</p>
         </div>
       </section>
 
       <section className="wl-sec" id="how">
         <div className="wl-in">
-          <span className="wl-kick wl-mono">How it works</span>
-          <h2>From brief to signed-off in three moves</h2>
+          <h2>Suki picks the angle before anyone hits record</h2>
           <ol className="wl-how">
             <li>
               <div className="wl-art a">
@@ -216,7 +188,7 @@ export default function Welcome() {
               <div className="txt">
                 <span className="wl-mono">01</span>
                 <h3>Write one brief</h3>
-                <p className="wl-muted">Pick the product, the accounts and whether the goal is organic attention or paid conversion.</p>
+                <p className="wl-muted">Give Suki the client, the product and the accounts you manage.</p>
               </div>
             </li>
             <li>
@@ -238,8 +210,8 @@ export default function Welcome() {
               </div>
               <div className="txt">
                 <span className="wl-mono">02</span>
-                <h3>Suki drafts for each account</h3>
-                <p className="wl-muted">A playbook and three concepts per account, each with a hook, scenes and a call to action.</p>
+                <h3>Each account gets its own idea</h3>
+                <p className="wl-muted">One serum becomes three stories. Each has its own angle, hook and script.</p>
               </div>
             </li>
             <li>
@@ -260,62 +232,55 @@ export default function Welcome() {
               <div className="txt">
                 <span className="wl-mono">03</span>
                 <h3>You review and sign</h3>
-                <p className="wl-muted">Flagged lines show the approved wording beside them. Sign-off opens only when every concept is approved.</p>
+                <p className="wl-muted">Flagged lines show the approved wording. You sign once every idea passes.</p>
               </div>
             </li>
           </ol>
         </div>
       </section>
 
-      <section className="wl-sec" id="inside">
+      <section className="wl-sec">
         <div className="wl-in">
-          <div className="wl-tags">
-            <span>Campaigns</span>
-            <span>Brand Brain</span>
-            <span>Accounts</span>
-            <span>Trend references</span>
-            <span>Review</span>
-            <span>Results</span>
-          </div>
-          <h2>Everything a campaign needs, in one workspace</h2>
+          <h2>What changes for your team</h2>
           <ul className="wl-feat">
             <li>
-              <h3>Brand Brain</h3>
-              <p className="wl-muted">Product facts, the brand&apos;s own marketing claims, prohibited claims and words to avoid. Creative may use the first two and nothing else.</p>
+              <h3>Every account keeps its voice</h3>
+              <p className="wl-muted">Each account stores its audience, tone, content pillars and past hooks. Two accounts can share a buyer and still sound nothing alike.</p>
             </li>
             <li>
-              <h3>Accounts</h3>
-              <p className="wl-muted">Each account keeps its own audience, voice, formats and past hooks, so two accounts can reach the same people and still sound nothing alike.</p>
+              <h3>Overlap gets caught before production</h3>
+              <p className="wl-muted">Suki compares hooks, angles, stories and formats across the whole campaign. When two ideas are too close, it shows what overlaps and how to pull them apart.</p>
             </li>
             <li>
-              <h3>Trend references</h3>
-              <p className="wl-muted">Formats such as “get ready with me” or “problem and solution”, each showing the dated evidence behind it.</p>
+              <h3>Clients only see claims they approved</h3>
+              <p className="wl-muted">The Brand Brain holds approved and banned claims. If a line goes further than the brand&apos;s wording, Suki flags it and shows the approved version beside it.</p>
             </li>
             <li>
-              <h3>Results and the next round</h3>
-              <p className="wl-muted">Log what happened after posting. The learnings are carried into the next round&apos;s playbooks.</p>
+              <h3>Trends become playbooks</h3>
+              <p className="wl-muted">Pick a trend reference. Suki explains why it fits this client. Then it turns the trend into an angle, a hook and a call to action. Every trend shows the dated proof behind it.</p>
             </li>
           </ul>
+          <div className="wl-proof">
+            <p>
+              <b>Try the sample campaign.</b> One serum. Three accounts. Watch Suki catch a claim that goes too far and fix it with the brand&apos;s own wording.
+            </p>
+            <a href="#sample" className="wl-btn ghost">
+              See a sample campaign
+            </a>
+          </div>
         </div>
       </section>
 
-      <section className="wl-sec" id="limits">
+      <section className="wl-sec" id="faq">
         <div className="wl-in">
-          <span className="wl-kick wl-mono">What Suki will not do</span>
-          <h2>It says so when it does not know</h2>
-          <div className="wl-not">
-            <div>
-              <h3>It cannot watch videos</h3>
-              <p className="wl-muted">The AI reads only your description of a reference. It cannot see the video or its numbers.</p>
-            </div>
-            <div>
-              <h3>It has no live trend data</h3>
-              <p className="wl-muted">A format counts as observed only when someone logs dated evidence for it.</p>
-            </div>
-            <div>
-              <h3>It never strengthens a claim</h3>
-              <p className="wl-muted">Creative may use the brand&apos;s wording. A stronger version is flagged before a person sees it.</p>
-            </div>
+          <h2>Questions studios ask</h2>
+          <div className="wl-faq">
+            {FAQ.map(([q, a]) => (
+              <details key={q}>
+                <summary>{q}</summary>
+                <p className="wl-muted">{a}</p>
+              </details>
+            ))}
           </div>
         </div>
       </section>
@@ -323,9 +288,8 @@ export default function Welcome() {
       <div className="wl-in">
         <section className="wl-end">
           <Mark size={64} />
-          <h2>
-            Suki <em>ghostwrites.</em> You sign.
-          </h2>
+          <h2>Ten accounts shouldn&apos;t mean one idea ten times.</h2>
+          <p>Open the sample workspace. See one brief become three different campaigns. No sign-up. The data is already loaded.</p>
           <Link href="/campaigns" className="wl-btn lg light">
             Open the workspace <span aria-hidden="true">›</span>
           </Link>
@@ -335,7 +299,7 @@ export default function Welcome() {
             <Mark size={20} />
             suki
           </span>
-          <span>Creative operations studio. The examples on this page are sample data.</span>
+          <span>Suki ghostwrites. You sign.</span>
         </footer>
       </div>
     </div>
