@@ -51,7 +51,7 @@ export default function Welcome() {
         <div className="wl-in">
           <div className="wl-head">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="wl-ghost" src="/ghost.png" alt="" width={404} height={348} />
+            <img className="wl-ghost" src="/ghost.webp" alt="" width={584} height={528} />
             <h1>
               One campaign<i className="d1">.</i> A different idea for every account<i className="d2">.</i>
             </h1>
