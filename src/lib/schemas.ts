@@ -209,7 +209,7 @@ export type ResultRow = z.infer<typeof resultRowSchema>;
 
 export const resultsIn = z.object({
   source: z.enum(["entered", "sample"]),
-  rows: z.array(resultRowSchema).min(1).max(9),
+  rows: z.array(resultRowSchema).min(1),
 });
 export type Results = z.infer<typeof resultsIn> & { enteredAt: string };
 
@@ -259,10 +259,10 @@ export const updateCampaignIn = z.object({
   keyMessage: z.string().trim().max(300).optional(),
   targetMarket: z.string().trim().min(1).max(300).optional(),
   deadline: dateIn.optional(),
-  accountIds: z.array(z.string().max(60)).max(3).optional(),
+  accountIds: z.array(z.string().max(60)).optional(),
   trendIds: z.array(z.string().max(60)).max(3).optional(),
-  playbooks: z.array(playbookSchema).max(3).optional(),
-  concepts: z.array(conceptSchema).max(9).optional(),
+  playbooks: z.array(playbookSchema).optional(),
+  concepts: z.array(conceptSchema).optional(),
 });
 
 export const newTrendIn = z.object({

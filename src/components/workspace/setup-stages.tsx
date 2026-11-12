@@ -64,7 +64,6 @@ export function AccountsStage() {
   const { campaign, busy, run, accounts } = useWorkspace();
   const toggle = (id: string) => {
     const on = campaign.accountIds.includes(id);
-    if (on && campaign.accountIds.length === 1) return;
     const accountIds = on ? campaign.accountIds.filter((x) => x !== id) : [...campaign.accountIds, id];
     run(`account:${id}`, `/api/campaigns/${campaign.id}`, "PATCH", { accountIds });
   };
