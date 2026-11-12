@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Gabarito, Onest, Sometype_Mono } from "next/font/google";
 import Link from "next/link";
 import { Sidebar } from "@/components/sidebar";
-import { aiMode } from "@/lib/ai";
-import { storageMode } from "@/lib/db";
 import "./globals.css";
 
 // Same three families and variable names as the landing page, from suki-brand/tokens.css.
@@ -37,11 +35,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               Suki
             </Link>
             <Sidebar />
-            <p className="mt-auto hidden text-xs leading-relaxed text-muted md:block">
-              {aiMode === "live" ? "AI: OpenAI" : "AI: sample answers (no OpenAI key)"}
-              <br />
-              {storageMode === "supabase" ? "Saving to Supabase" : storageMode === "temporary" ? "Temporary saving. Add Supabase to keep data." : "Saving to this computer"}
-            </p>
           </aside>
           <main className="min-w-0 flex-1 p-4 md:p-10">{children}</main>
         </div>

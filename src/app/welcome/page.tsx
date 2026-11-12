@@ -12,13 +12,10 @@ export const metadata: Metadata = {
   description: "Suki turns one client campaign into a separate creative direction for each account you run. It checks the ideas against each other and every claim against what the brand approved.",
 };
 
+// The icon file has clear corners, so it sits cleanly on any background.
 function Mark({ size }: { size: number }) {
-  return (
-    <span className="wl-mark" style={{ width: size, height: size }}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/suki-mark.webp" alt="" width={size} height={size} />
-    </span>
-  );
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img className="wl-mark" src="/icon.png" alt="" width={size} height={size} />;
 }
 
 const FAQ: [string, string][] = [
@@ -50,18 +47,37 @@ export default function Welcome() {
       </header>
 
       <section className="wl-hero">
+        <div className="wl-sky" aria-hidden="true" />
         <div className="wl-in">
-          <h1>
-            One campaign<i className="d1">.</i> A different idea for every account<i className="d2">.</i>
-          </h1>
-          <p className="wl-sub">Suki turns one client campaign into a separate creative direction for each account you run. It checks the ideas against each other. It checks every claim against what the brand approved.</p>
-          <div className="wl-cta">
-            <Link href="/campaigns" className="wl-btn lg">
-              Open the workspace <span aria-hidden="true">›</span>
-            </Link>
-            <a href="#sample" className="wl-link">See a sample campaign</a>
-            <span className="wl-fine">Sample data. No sign-up.</span>
+          <div className="wl-head">
+            <h1>
+              One campaign<i className="d1">.</i> A different idea for every account<i className="d2">.</i>
+            </h1>
+            <span className="wl-cursor c1" aria-hidden="true">
+              <svg viewBox="0 0 16 16" width="16" height="16"><path d="M2 2l12 5-5 1.6L7.4 14z" /></svg>
+              <b>@studentfinds</b>
+            </span>
+            <span className="wl-cursor c2" aria-hidden="true">
+              <svg viewBox="0 0 16 16" width="16" height="16"><path d="M2 2l12 5-5 1.6L7.4 14z" /></svg>
+              <b>@beautyfinds</b>
+            </span>
           </div>
+          <p className="wl-sub">Suki turns one client campaign into a separate creative direction for each account you run. It checks the ideas against each other. It checks every claim against what the brand approved.</p>
+
+          <form className="wl-brief" action="/campaigns/new" method="get">
+            <label htmlFor="wl-brief-in" className="sr-only">
+              Campaign brief
+            </label>
+            <textarea id="wl-brief-in" name="objective" rows={2} maxLength={500} placeholder="Describe your campaign or paste a brief" />
+            <div className="wl-brief-row">
+              <a href="#sample" className="wl-link">
+                See a sample campaign
+              </a>
+              <button type="submit" className="wl-btn">
+                Plan campaign
+              </button>
+            </div>
+          </form>
 
           <div className="wl-win" id="sample">
             <input type="radio" name="wl-tab" id="wl-t1" defaultChecked />
