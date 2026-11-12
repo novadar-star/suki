@@ -36,7 +36,6 @@ const PROHIBITED: { claim: string; pattern: RegExp }[] = [
 ];
 
 // Claims with a hand-written pattern use it. Any other prohibited claim is matched as a plain phrase.
-const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 function prohibitedPatterns(claims: string[]) {
   return claims.map((claim) => PROHIBITED.find((p) => p.claim === claim) ?? { claim, pattern: new RegExp(escapeRe(claim.trim()).replace(/\s+/g, "\\s+"), "i") });
 }
@@ -61,8 +60,16 @@ function locate(c: Concept, pattern: RegExp) {
 
 export const ruleId = (prefix: "P" | "W" | "D", i: number) => `${prefix}-${String(i + 1).padStart(2, "0")}`;
 
-// Words that show the product is on screen or named.
-const PRODUCT = /\b(serum|bottle|dropper|lust minerals|4d|hyaluronic)\b/i;
+// Makes text typed by a person safe to use inside a pattern.
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+// Words that show the product is on screen or named: the brand name, the product name,
+// the distinctive words in the product name, and a few generic packaging words.
+function productPattern(brand: StudioData["brand"]) {
+  const distinctive = brand.product.name.split(/\s+/).filter((w) => w.length >= 5 || /\d/.test(w));
+  const terms = [brand.name, brand.product.name, ...distinctive, "bottle", "dropper"].map((t) => escapeRe(t.trim().toLowerCase())).filter(Boolean);
+  return new RegExp(`\\b(${[...new Set(terms)].join("|")})\\b`, "i");
+}
 const ACTION_CTA = /\b(shop|buy|get yours|order|tap|link|try it|add to cart)\b/i;
 const HARD_SELL = /\b(buy now|shop now|order now|discount|sale|% off|limited time|use code)\b/i;
 
@@ -74,6 +81,11 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
   const findings: Finding[] = [];
   const add = (f: Omit<Finding, "id">) => findings.push({ ...f, id: `${f.kind}:${f.conceptIds.join("+")}` });
   const approvedClaims = new Set(brand.claims.map((c) => c.text.toLowerCase()));
+  const PRODUCT = productPattern(brand);
+  const idRange = (kind: "product_fact" | "marketing_claim") => {
+    const ids = brand.claims.filter((c) => c.kind === kind).map((c) => c.id);
+    return ids.length > 1 ? `${ids[0]} to ${ids[ids.length - 1]}` : (ids[0] ?? "none");
+  };
 
   // Within each account
   for (const accountId of new Set(live.map((c) => c.accountId))) {
@@ -164,12 +176,14 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
         });
     }
     for (const w of brand.guidelines.avoidWords) {
-      if (new RegExp(`\\b${w}\\b`, "i").test(text))
+      // Not inside a longer word. Lookarounds, because \b fails when the phrase ends in punctuation.
+      const avoid = new RegExp(`(?<![a-z0-9])${escapeRe(w.trim())}(?![a-z0-9])`, "i");
+      if (avoid.test(text))
         add({
           severity: "fix",
           kind: "avoid_word",
           rule: `Brand Brain ${ruleId("W", brand.guidelines.avoidWords.indexOf(w))}: words to avoid`,
-          excerpt: locate(c, new RegExp(`\\b${w}\\b`, "i")),
+          excerpt: locate(c, avoid),
           conceptIds: [c.id],
           message: `"${c.title}" uses "${w}", which is on the brand's avoid list.`,
           suggestion: "Replace it with the brand's own wording.",
@@ -180,7 +194,7 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
         add({
           severity: "fix",
           kind: "unsupported_claim",
-          rule: "Brand Brain: claims must match an approved claim ID (F-01 to F-05, C-01 to C-04)",
+          rule: `Brand Brain: claims must match an approved claim ID (${idRange("product_fact")}, ${idRange("marketing_claim")})`,
           excerpt: { text: claim, matches: [claim] },
           conceptIds: [c.id],
           message: `"${c.title}" relies on "${claim}", which is not a product fact or approved claim.`,
@@ -211,7 +225,7 @@ export function runChecks(concepts: Concept[], objectiveType: ObjectiveType = "o
           excerpt: { text: c.scenes[0].visual, matches: [] },
           conceptIds: [c.id],
           message: `"${c.title}" does not show or name the product in the first two scenes. Paid viewers decide in about two seconds.`,
-          suggestion: "Put the serum on screen in scene 1 or 2.",
+          suggestion: "Put the product on screen in scene 1 or 2.",
         });
       if (!ACTION_CTA.test(c.cta))
         add({

@@ -308,3 +308,31 @@ export const accountIn = z.object({
   restrictions: lines,
 });
 export type AccountIn = z.infer<typeof accountIn>;
+
+export const brandIn = z.object({
+  name: text("Brand name", 80),
+  description: text("Brand description", 400),
+  industry: text("Industry", 80),
+  targetMarket: text("Target market"),
+  positioning: text("Positioning"),
+  tone: text("Tone"),
+  sourceUrl: z
+    .string()
+    .trim()
+    .max(300)
+    .default("")
+    .refine((u) => u === "" || /^https?:\/\/\S+$/.test(u), "The product page link must start with http:// or https://."),
+  productName: text("Product name", 100),
+  productDescription: text("Product description", 400),
+  size: text("Size", 40),
+  price: text("Price", 40),
+  keyIngredients: lines,
+  usage: lines,
+  facts: lines.refine((a) => a.length > 0, "Add at least one product fact."),
+  marketingClaims: lines,
+  prohibitedClaims: lines,
+  avoidWords: lines,
+  disclaimers: lines,
+  restrictions: lines,
+});
+export type BrandIn = z.infer<typeof brandIn>;

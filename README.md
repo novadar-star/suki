@@ -49,7 +49,7 @@ For Supabase, run `supabase/migrations/0001_docs.sql` once in the SQL editor. Re
 
 Organic and paid are judged differently. Paid adds two must-fix rules: the product must show in the first two scenes, and the CTA must ask for one clear action. Organic flags hard-sell language. Results rank organic by watch time plus saves and shares, and paid by ROAS.
 
-`npx tsx scripts/check-demo.ts`, `scripts/check-paid.ts` and `scripts/check-analyst.ts` check the sample answers, the paid rules and the Analyst thresholds.
+`npx tsx scripts/check-demo.ts`, `scripts/check-paid.ts`, `scripts/check-analyst.ts` and `scripts/check-brand.ts` check the sample answers, the paid rules and the Analyst thresholds.
 
 ## Video
 

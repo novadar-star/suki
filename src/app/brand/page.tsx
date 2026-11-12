@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getBrand } from "@/lib/repo";
 import { Field, IdList, List, PageHeader, Panel, PanelTitle, Tag } from "@/components/ui";
 import { ruleId } from "@/lib/checks";
@@ -12,18 +13,29 @@ export default async function BrandPage() {
 
   return (
     <>
-      <PageHeader
-        title={brand.name}
-        intro={
-          <>
-            {brand.description} Product details come from the{" "}
-            <a href={brand.sourceUrl} className="underline underline-offset-2" target="_blank" rel="noreferrer">
-              product page
-            </a>
-            , checked on {new Date(brand.checkedOn).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}.
-          </>
-        }
-      />
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <PageHeader
+          title={brand.name}
+          intro={
+            brand.sourceUrl ? (
+              <>
+                {brand.description} Product details come from the{" "}
+                <a href={brand.sourceUrl} className="underline underline-offset-2" target="_blank" rel="noreferrer">
+                  product page
+                </a>
+                , checked on {new Date(brand.checkedOn).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}.
+              </>
+            ) : (
+              <>
+                {brand.description} Product details were entered by the team on {new Date(brand.checkedOn).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}.
+              </>
+            )
+          }
+        />
+        <Link href="/brand/edit" className="press inline-flex min-h-9 items-center rounded-md border border-line bg-panel px-3.5 text-sm font-medium hover:border-ink/30">
+          Edit Brand Brain
+        </Link>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
         <Panel className="p-0 overflow-hidden">
