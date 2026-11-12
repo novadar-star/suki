@@ -55,8 +55,18 @@
 .wl-sky::after { content: ""; position: absolute; left: 50%; top: 640px; width: 2400px; height: 1400px; margin-left: -1200px; border-radius: 50%;
   background: linear-gradient(180deg, #f4eeff 0%, #ffffff 30%);
   box-shadow: 0 -2px 0 rgba(255, 255, 255, 0.9), 0 -24px 60px 8px rgba(155, 92, 255, 0.85), 0 -90px 160px 40px rgba(124, 58, 237, 0.55), 0 -40px 220px 60px rgba(232, 121, 185, 0.25); }
-.wl-head { position: relative; max-width: 860px; margin: 0 auto; }
-.wl-hero h1 { font-size: clamp(40px, 6.2vw, 76px); font-weight: 500; letter-spacing: -0.035em; margin: 0 auto; max-width: 18ch; color: #fff; }
+.wl-head { position: relative; max-width: 860px; margin: 0 auto; isolation: isolate; }
+/* the Suki ghost, big and soft behind the headline, like a figure in the night sky */
+.wl-ghost { position: absolute; z-index: -1; left: 50%; top: 50%; width: min(620px, 92vw); height: auto; translate: -50% -44%;
+  opacity: 0.42; filter: blur(1.5px) saturate(1.15) drop-shadow(0 0 70px rgba(155, 92, 255, 0.7)); pointer-events: none; transform-origin: 50% 90%; }
+@media (prefers-reduced-motion: no-preference) {
+  .wl-ghost { animation: wl-float 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+}
+@keyframes wl-float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-10px) rotate(-1deg); } }
+/* film grain over the whole sky, so the glow and the ghost feel soft and printed */
+.wl-hero::after { content: ""; position: absolute; inset: 0 0 auto; height: 1000px; z-index: -1; pointer-events: none; opacity: 0.22; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+.wl-hero h1 { font-size: clamp(40px, 6.2vw, 76px); font-weight: 500; letter-spacing: -0.035em; margin: 0 auto; max-width: 18ch; color: #fff; text-shadow: 0 2px 30px rgba(18, 5, 43, 0.55); }
 .wl-hero h1 i { font-style: normal; }
 .wl-hero h1 .d1 { color: #b78cff; } .wl-hero h1 .d2 { color: var(--pink); }
 .wl-sub { font-size: 18px; color: rgba(255, 255, 255, 0.74); max-width: 48ch; margin: 22px auto 0; }

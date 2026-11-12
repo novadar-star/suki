@@ -50,6 +50,8 @@ export default function Welcome() {
         <div className="wl-sky" aria-hidden="true" />
         <div className="wl-in">
           <div className="wl-head">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="wl-ghost" src="/ghost.png" alt="" width={404} height={348} />
             <h1>
               One campaign<i className="d1">.</i> A different idea for every account<i className="d2">.</i>
             </h1>
