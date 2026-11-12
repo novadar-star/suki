@@ -89,5 +89,5 @@ export const trendOrigin = aiMode === "live" ? ("ai" as const) : ("demo" as cons
 export async function analyzeTrend(input: { title: string; platform: string; description: string }) {
   if (aiMode === "live") return generateJson({ system: SYSTEM, prompt: trendAnalysisPrompt(input), schema: trendAnalysisOut, temperature: 0.4 });
   if (input.description.trim() === DEMO_TREND_SAMPLE.description) return demoTrendAnalysis;
-  throw new EngineError("Trend analysis needs a Gemini key. In demo mode, use the sample reference.");
+  throw new EngineError("Trend analysis needs an OpenAI key. In demo mode, use the sample reference.");
 }

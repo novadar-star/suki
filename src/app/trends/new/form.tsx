@@ -41,7 +41,7 @@ export function NewTrendForm({ demo, sample }: { demo: boolean; sample: Sample }
     >
       {demo && (
         <div className="rounded-lg border border-line bg-panel p-4 text-sm">
-          <p>No Gemini key is set, so only the sample description can be analysed.</p>
+          <p>No OpenAI key is set, so only the sample description can be analysed.</p>
           <Button type="button" className="mt-3" onClick={useSample}>
             Fill in the sample
           </Button>

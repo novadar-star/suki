@@ -16,7 +16,7 @@ Open http://localhost:3000. The home page is the landing page; the workspace sta
 Needs Node.js 22 or newer.
 
 It works with no setup:
-- **AI:** without a Gemini key, Suki uses saved sample answers. The full sample set is for the "Get ready with me" trend.
+- **AI:** without an OpenAI key, Suki uses saved sample answers. The full sample set is for the "Get ready with me" trend.
 - **Saving:** without Supabase, data is saved to `.data/db.json` on your computer.
 
 The sidebar shows which mode is on.
@@ -27,8 +27,8 @@ Copy `.env.example` to `.env.local` and fill in:
 
 | Variable | Where to get it |
 |---|---|
-| `GEMINI_API_KEY` | aistudio.google.com, then "Get API key" |
-| `GEMINI_MODEL` | Leave as `gemini-2.5-flash` unless you want another model |
+| `OPENAI_API_KEY` | platform.openai.com, then API keys, then "Create new secret key". Never commit it or paste it into this README |
+| `OPENAI_MODEL` | Leave as `gpt-4o-mini` unless you want another model |
 | `SUPABASE_URL` | Supabase project, then Settings, then API |
 | `SUPABASE_SECRET_KEY` | Same page. Use the secret key (server only). Never put it in browser code |
 

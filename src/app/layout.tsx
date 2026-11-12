@@ -14,6 +14,9 @@ const sometype = Sometype_Mono({ subsets: ["latin"], weight: ["400", "500"], sty
 export const metadata: Metadata = {
   title: "Suki",
   description: "Suki ghostwrites. You sign. From brief to signed-off, brand-safe content for every account.",
+  // Served from public/ rather than as src/app/icon.png: Next's icon loader breaks
+  // when the project path contains an apostrophe, which takes down the whole dev server.
+  icons: { icon: "/icon.png", apple: "/apple-icon.png" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -35,7 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </Link>
             <Sidebar />
             <p className="mt-auto hidden text-xs leading-relaxed text-muted md:block">
-              {aiMode === "live" ? "AI: Gemini" : "AI: sample answers (no Gemini key)"}
+              {aiMode === "live" ? "AI: OpenAI" : "AI: sample answers (no OpenAI key)"}
               <br />
               {storageMode === "supabase" ? "Saving to Supabase" : storageMode === "temporary" ? "Temporary saving. Add Supabase to keep data." : "Saving to this computer"}
             </p>
