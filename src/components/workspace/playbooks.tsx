@@ -14,6 +14,21 @@ export function PlaybooksStage() {
   const { campaign, busy, run } = useWorkspace();
   const ready = campaign.trendIds.length > 0 && campaign.accountIds.length > 0;
   const has = campaign.playbooks.length > 0;
+  const [step, setStep] = useState<{ at: number; of: number } | null>(null);
+
+  // One request per account, in order, so each card fills in as soon as it is ready
+  // and later playbooks still see (and avoid) the angles written before them.
+  async function makeAll() {
+    const ids = campaign.accountIds;
+    try {
+      for (let i = 0; i < ids.length; i++) {
+        setStep({ at: i + 1, of: ids.length });
+        if (!(await run(`remake:${ids[i]}`, `/api/campaigns/${campaign.id}/playbooks`, "POST", { accountId: ids[i] }))) return;
+      }
+    } finally {
+      setStep(null);
+    }
+  }
 
   return (
     <>
@@ -23,11 +38,11 @@ export function PlaybooksStage() {
         </p>
         <Button
           variant={has ? "secondary" : "primary"}
-          disabled={!ready}
-          busy={busy === "playbooks"}
-          onClick={() => run("playbooks", `/api/campaigns/${campaign.id}/playbooks`, "POST")}
+          disabled={!ready || (!!busy && !step)}
+          busy={!!step}
+          onClick={makeAll}
         >
-          {busy === "playbooks" ? "Writing playbooks" : has ? "Remake all playbooks" : "Make playbooks"}
+          {step ? `Writing ${step.at} of ${step.of}` : has ? "Remake all playbooks" : "Make playbooks"}
         </Button>
       </div>
       {!ready && <p className="mb-6 text-warn">Pick at least one account and one trend first.</p>}
@@ -53,10 +68,13 @@ function AccountHeader({ accountId }: { accountId: string }) {
 }
 
 function EmptyCard({ accountId }: { accountId: string }) {
+  const { busy } = useWorkspace();
   return (
     <article className="rounded-xl border border-dashed border-line p-5">
       <AccountHeader accountId={accountId} />
-      <p className="mt-2 text-sm text-muted">No playbook yet.</p>
+      <p className="mt-2 text-sm text-muted" aria-live="polite">
+        {busy === `remake:${accountId}` ? "Writing this playbook…" : "No playbook yet."}
+      </p>
     </article>
   );
 }
