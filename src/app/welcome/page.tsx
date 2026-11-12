@@ -27,7 +27,7 @@ export default function Welcome() {
     <div className={`wl ${gabarito.variable} ${onest.variable} ${sometype.variable}`}>
       <header className="wl-nav">
         <div>
-          <Link href="/welcome" className="wl-logo">
+          <Link href="/" className="wl-logo">
             <Mark size={28} />
             suki
           </Link>
@@ -36,7 +36,7 @@ export default function Welcome() {
             <a href="#inside">What&apos;s inside</a>
             <a href="#limits">Limits</a>
           </nav>
-          <Link href="/" className="wl-btn">
+          <Link href="/campaigns" className="wl-btn">
             Open workspace
           </Link>
         </div>
@@ -50,7 +50,7 @@ export default function Welcome() {
           </h1>
           <p className="wl-sub">Suki drafts a playbook and concepts for each account, checks every line against what the brand may say, and waits for a person to sign.</p>
           <div className="wl-cta">
-            <Link href="/" className="wl-btn lg">
+            <Link href="/campaigns" className="wl-btn lg">
               Open the workspace <span aria-hidden="true">›</span>
             </Link>
             <span className="wl-fine">Demo workspace · sample data · no account needed</span>
@@ -326,7 +326,7 @@ export default function Welcome() {
           <h2>
             Suki <em>ghostwrites.</em> You sign.
           </h2>
-          <Link href="/" className="wl-btn lg light">
+          <Link href="/campaigns" className="wl-btn lg light">
             Open the workspace <span aria-hidden="true">›</span>
           </Link>
         </section>

@@ -16,7 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <div className="mx-auto flex min-h-screen max-w-[1280px] flex-col md:flex-row">
           <aside className="flex shrink-0 flex-col gap-6 border-line p-4 md:sticky md:top-0 md:h-screen md:w-56 md:border-r md:p-6">
-            <Link href="/" className="font-display text-2xl font-bold tracking-tight">
+            <Link href="/campaigns" className="font-display text-2xl font-bold tracking-tight">
               suki
             </Link>
             <Sidebar />

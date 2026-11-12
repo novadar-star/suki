@@ -86,7 +86,7 @@ export function Workspace({ initial, trends, stage }: { initial: Campaign; trend
   return (
     <WorkspaceContext.Provider value={{ campaign, trends, busy, run }}>
       <header className="mb-6">
-        <Link href="/" className="text-sm text-muted hover:text-ink">
+        <Link href="/campaigns" className="text-sm text-muted hover:text-ink">
           Campaigns
         </Link>
         <h1 className="mt-1 text-3xl font-bold">{campaign.name}</h1>
