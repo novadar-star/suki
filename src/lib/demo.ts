@@ -2,7 +2,7 @@ import { accounts } from "@/data/accounts";
 import type { Account, Trend } from "./types";
 import type { ConceptOut, PlaybookOut } from "./schemas";
 
-// Saved sample answers used when no Gemini key is set.
+// Saved sample answers used when no OpenAI key is set.
 // The "grwm" set is hand-written. It contains 4 planted problems so the
 // portfolio check has something real to catch in the demo.
 
@@ -345,7 +345,7 @@ export function demoPlaybook(account: Account, selected: Trend[]): PlaybookOut {
     ...base,
     rejectedTrends: selected
       .filter((t) => t.id !== pick.id)
-      .map((t) => ({ trendId: t.id, reason: "Demo mode does not compare trends. Add a Gemini key for a real comparison." })),
+      .map((t) => ({ trendId: t.id, reason: "Demo mode does not compare trends. Add an OpenAI key for a real comparison." })),
   };
 }
 
