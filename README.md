@@ -5,11 +5,15 @@ Turns one campaign into different short-form video plans for each social account
 ## Run it
 
 ```bash
+git clone https://github.com/novadar-star/myrtis.git
+cd myrtis
 npm install
 npm run dev
 ```
 
-Open http://localhost:3000.
+Open http://localhost:3000. The home page is the landing page; the workspace starts at http://localhost:3000/campaigns.
+
+Needs Node.js 22 or newer.
 
 It works with no setup:
 - **AI:** without a Gemini key, Suki uses saved sample answers. The full sample set is for the "Get ready with me" trend.
@@ -74,3 +78,13 @@ Organic and paid are judged differently. Paid adds two must-fix rules: the produ
 ## Brand
 
 `suki-brand/` is the shared brand kit (tokens, icon, voice) and the source of truth for the design system. `src/app/globals.css` mirrors its tokens. Violet marks what Suki wrote or is doing. Ink marks a person's decision, so primary buttons, selections and sign-off are ink. Status colors (ok, warn, bad) always come with an icon or a word.
+
+## Design
+
+- `suki-brand/` holds the brand rules (`BRAND.md`), the shared design tokens (`tokens.css`) and the app icon. Change a token there first, then in `src/app/globals.css`.
+- `design/suki-prototype.html` is a clickable prototype of the redesign. Open it in a browser.
+- `src/app/welcome/` is the landing page.
+
+## Working on it
+
+Create a branch, push it, and open a pull request into `main`. Every push to `main` deploys to production on Vercel, and every other branch gets its own preview link.

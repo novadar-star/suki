@@ -1,18 +1,10 @@
-# Suki brand kit (shared)
+# Suki brand kit
 
-One kit for both parallel workstreams so they stay cohesive:
-
-| Workstream | Session | Output |
-|---|---|---|
-| Design system architecture | "Suki design system architecture" | `suki-prototype.html` → artifact "Suki Redesign Prototype" (https://claude.ai/artifact/8W9ZrzAXChbRLyP5uGLzcN) |
-| Creative Operations Studio | "Suki Creative Operations Studio" | Next.js app in `myrtis/` (package name `suki`) |
-
-The **design system is the source of truth**; the Ops Studio consumes it. If a token changes, change it in `tokens.css` here first, then in both projects.
+The design system is the source of truth for the app. If a token changes, change it in `tokens.css` here first, then in the app.
 
 ## Icon
 - `icon.webp` — the official Suki app icon: a lavender ghost with a trailing wisp on a deep-violet squircle.
 - Use it for: favicon, app header logo (28–32px, rounded with `--r-icon`), empty states, loading screens, the prototype's title bar.
-- Do not use the older candidates from the icon-exploration session (`sukic-wisp.svg`, the `myrtle-*` icons, or the blue/cyan gradient).
 - Name in UI: **Suki** (not "Myrtis" and not "Sukic").
 
 ## Color
