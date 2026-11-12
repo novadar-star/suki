@@ -28,3 +28,5 @@ console.log("\nasset id example:", assetId(normalize({ id: "abcd1234", concepts 
 const ok = four.insights.length === 0 && nine.insights.some((i) => i.dimension === "account") && paid.insights.length > 0;
 console.log(ok ? "\nPASS" : "\nFAIL");
 process.exit(ok ? 0 : 1);
+
+// test 
