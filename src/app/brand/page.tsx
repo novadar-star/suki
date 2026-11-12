@@ -64,7 +64,7 @@ export default function BrandPage() {
       <Panel className="mt-4">
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <h2 className="text-lg font-semibold">Guidelines</h2>
-          {g.isSample && <Tag tone="accent">Sample for this demo. Replace with the brand&apos;s real guidelines.</Tag>}
+          {g.isSample && <Tag tone="warn">Sample for this demo. Replace with the brand&apos;s real guidelines.</Tag>}
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <div>

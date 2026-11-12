@@ -51,15 +51,13 @@ export function ReviewStage() {
         </Button>
       </div>
 
-      {!campaign.concepts.length && <p className="text-accent">Make concepts first.</p>}
-
-      {r && <SignOff />}
+      {!campaign.concepts.length && <p className="text-warn">Make concepts first.</p>}
 
       {r && (
         <>
           <div className="mb-6 grid gap-3 sm:grid-cols-3">
             <Stat label="Concepts checked" value={`${r.conceptCount} across ${r.accountCount} accounts`} />
-            <Stat label="Blockers" hint="Must be fixed before sign-off" value={String(fixes.length)} tone={fixes.length ? "accent" : "plain"} />
+            <Stat label="Blockers" hint="Must be fixed before sign-off" value={String(fixes.length)} tone={fixes.length ? "bad" : "plain"} />
             <Stat label="Warnings" hint={done.length ? `${done.length} overridden with a reason` : "Fix, or override with a reason"} value={String(checks.length)} />
           </div>
 
@@ -69,7 +67,7 @@ export function ReviewStage() {
               {Object.entries(r.angleCounts)
                 .sort((a, b) => b[1] - a[1])
                 .map(([k, n]) => (
-                  <Tag key={k} tone={n > 3 ? "accent" : "plain"}>
+                  <Tag key={k} tone={n > 3 ? "warn" : "plain"}>
                     {angleLabel[k as keyof typeof angleLabel]}: {n}
                   </Tag>
                 ))}
@@ -104,11 +102,11 @@ export function ReviewStage() {
   );
 }
 
-function Stat({ label, value, hint, tone = "plain" }: { label: string; value: string; hint?: string; tone?: "plain" | "accent" }) {
+function Stat({ label, value, hint, tone = "plain" }: { label: string; value: string; hint?: string; tone?: "plain" | "bad" }) {
   return (
     <div className="rounded-xl border border-line bg-panel p-4">
       <p className="text-sm text-muted">{label}</p>
-      <p className={clsx("mt-1 font-display text-2xl font-bold", tone === "accent" && "text-accent")}>{value}</p>
+      <p className={clsx("mt-1 font-display text-2xl font-semibold", tone === "bad" && "text-bad")}>{value}</p>
       {hint && <p className="text-xs text-muted">{hint}</p>}
     </div>
   );
@@ -122,7 +120,7 @@ function Excerpt({ text, matches }: { text: string; matches: string[] }) {
     <blockquote className="mt-3 rounded-md border-l-4 border-line bg-paper px-3 py-2 text-[15px]">
       {parts.map((p, i) =>
         words.length && i % 2 === 1 ? (
-          <mark key={i} className="rounded bg-accent-soft px-0.5 font-semibold text-accent">
+          <mark key={i} className="rounded bg-bad-soft px-0.5 font-semibold text-bad">
             {p}
           </mark>
         ) : (
@@ -147,12 +145,12 @@ function FindingRow({ f }: { f: Finding }) {
   const url = `/api/campaigns/${campaign.id}/overrides`;
 
   return (
-    <li className={clsx("rounded-xl border bg-panel p-5", blocker ? "border-accent/50" : "border-[#c58a1d]/40", override && "opacity-75")}>
+    <li className={clsx("rounded-xl border bg-panel p-5", blocker ? "border-bad/50" : "border-warn/40", override && "opacity-75")}>
       <div className="flex flex-wrap items-center gap-2">
         <span
           className={clsx(
             "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold",
-            blocker ? "bg-accent-soft text-accent" : "bg-[#fdf1dc] text-[#8a5a00]",
+            blocker ? "bg-bad-soft text-bad" : "bg-warn-soft text-warn",
           )}
         >
           {blocker ? <OctagonX aria-hidden className="size-3.5" /> : <TriangleAlert aria-hidden className="size-3.5" />}
@@ -232,6 +230,21 @@ function FindingRow({ f }: { f: Finding }) {
 }
 
 // A person approves concepts and signs them off as the campaign's deliverables.
+export function SignOffStage() {
+  const { campaign } = useWorkspace();
+  if (!campaign.report)
+    return (
+      <div className="rounded-xl border border-dashed border-line bg-panel p-8">
+        <h2 className="text-xl font-semibold">Run the review first</h2>
+        <p className="mt-1 max-w-lg text-muted">Sign-off needs a review, so you can see which concepts pass before you pick the deliverables.</p>
+        <Link href="?stage=review" scroll={false} className="press mt-4 inline-block rounded-md bg-ink px-4 py-2 text-sm font-medium text-inv hover:bg-ink/85">
+          Go to review
+        </Link>
+      </div>
+    );
+  return <SignOff />;
+}
+
 function SignOff() {
   const { campaign, busy, run } = useWorkspace();
   const url = `/api/campaigns/${campaign.id}`;
@@ -244,11 +257,11 @@ function SignOff() {
 
   if (campaign.signedOffAt)
     return (
-      <section className="mb-8 rounded-xl border border-[#11704f]/30 bg-[#e1f4ec]/60 p-5">
+      <section className="mb-8 rounded-xl border border-ok/30 bg-ok-soft/60 p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h2 className="flex items-center gap-2 text-lg font-semibold">
-              <CircleCheck aria-hidden className="size-5 text-[#11704f]" />
+              <CircleCheck aria-hidden className="size-5 text-ok" />
               Signed off. {approved.length} deliverable{approved.length === 1 ? "" : "s"} ready for production.
             </h2>
             <p className="mt-1 text-sm text-muted">
@@ -268,7 +281,7 @@ function SignOff() {
             <a href={`${url}/export`} className="press inline-flex min-h-9 items-center rounded-md border border-line bg-panel px-3.5 text-sm font-medium hover:border-ink/30">
               Export production pack
             </a>
-            <Link href="?stage=results" scroll={false} className="press inline-flex min-h-9 items-center rounded-md bg-ink px-3.5 text-sm font-medium text-white hover:bg-ink/85">
+            <Link href="?stage=results" scroll={false} className="press inline-flex min-h-9 items-center rounded-md bg-ink px-3.5 text-sm font-medium text-inv hover:bg-ink/85">
               Add results
             </Link>
             <Button variant="quiet" busy={busy === "reopen"} onClick={() => run("reopen", `${url}/signoff`, "DELETE")}>
@@ -298,7 +311,7 @@ function SignOff() {
         </Button>
       </div>
       {blocking.length > 0 && (
-        <p className="mt-3 text-sm text-accent">
+        <p className="mt-3 text-sm text-bad">
           {blocking.length} approved concept{blocking.length === 1 ? " has" : "s have"} blockers. Rewrite or unapprove {blocking.length === 1 ? "it" : "them"}.
         </p>
       )}
@@ -329,7 +342,7 @@ function SignOff() {
                     {a?.name} · {angleLabel[c.angleType]}
                   </span>
                   <span className="mt-0.5 block text-sm font-medium leading-snug">&ldquo;{c.hook}&rdquo;</span>
-                  <span className={clsx("mt-1 block text-xs", fixes ? "text-accent" : "text-[#11704f]")}>
+                  <span className={clsx("mt-1 block text-xs", fixes ? "text-bad" : "text-ok")}>
                     {fixes ? `${fixes} blocker${fixes === 1 ? "" : "s"}` : "Passes checks"}
                   </span>
                 </span>

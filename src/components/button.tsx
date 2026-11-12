@@ -14,10 +14,10 @@ export function Button({ variant = "secondary", busy, className, children, disab
       aria-busy={busy || undefined}
       className={clsx(
         "press inline-flex min-h-9 items-center justify-center gap-2 rounded-md px-3.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50",
-        variant === "primary" && "bg-ink text-white hover:bg-ink/85",
+        variant === "primary" && "bg-ink text-inv hover:bg-ink/85",
         variant === "secondary" && "border border-line bg-panel hover:border-ink/30",
         variant === "quiet" && "text-muted hover:bg-paper hover:text-ink",
-        variant === "danger" && "text-accent hover:bg-accent-soft",
+        variant === "danger" && "text-bad hover:bg-bad-soft",
         className,
       )}
     >
@@ -30,11 +30,11 @@ export function Button({ variant = "secondary", busy, className, children, disab
 export function ErrorNote({ message }: { message: string | null }) {
   if (!message) return null;
   return (
-    <p role="alert" className="rounded-md bg-accent-soft px-3 py-2 text-sm text-accent">
+    <p role="alert" className="rounded-md bg-bad-soft px-3 py-2 text-sm text-bad">
       {message}
     </p>
   );
 }
 
 export const inputClass =
-  "w-full rounded-md border border-line bg-panel px-3 py-2 text-[15px] placeholder:text-muted/70 focus:border-ink/40 focus:outline-none";
+  "w-full rounded-md border border-line bg-panel px-3 py-2 text-[15px] placeholder:text-muted/70 focus:border-accent focus:outline-none";

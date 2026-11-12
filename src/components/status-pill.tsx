@@ -3,10 +3,10 @@ import { statusLabel, type CampaignStatus } from "@/lib/schemas";
 
 const tone: Record<CampaignStatus, string> = {
   draft: "border border-line bg-panel text-muted",
-  in_progress: "bg-[#e8eefc] text-[#2448b8]",
-  in_review: "bg-[#fdf1dc] text-[#8a5a00]",
-  approved: "bg-[#e1f4ec] text-[#11704f]",
-  completed: "bg-ink text-white",
+  in_progress: "bg-accent-soft text-accent",
+  in_review: "bg-warn-soft text-warn",
+  approved: "bg-ok-soft text-ok",
+  completed: "bg-ink text-inv",
 };
 
 export function StatusPill({ status }: { status: CampaignStatus }) {

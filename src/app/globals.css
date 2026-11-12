@@ -1,17 +1,62 @@
 @import "tailwindcss";
-@import "@fontsource-variable/bricolage-grotesque";
-@import "@fontsource-variable/instrument-sans";
 
+/* Tokens come from suki-brand/tokens.css, the shared source of truth. Change them
+ * there first, then here. Light only for now: the dark values stay in the kit.
+ * Rule: violet (accent) marks what Suki wrote or is doing. Ink marks a person's
+ * decision, so primary buttons, selections and sign-off are ink. */
 @theme {
-  --color-paper: #f5f6f3;
-  --color-panel: #ffffff;
-  --color-ink: #1c1f23;
-  --color-muted: #5f6670;
-  --color-line: #dcdfda;
-  --color-accent: #d6336c;
-  --color-accent-soft: #fbe7ee;
-  --font-sans: "Instrument Sans Variable", system-ui, sans-serif;
-  --font-display: "Bricolage Grotesque Variable", system-ui, sans-serif;
+  /* Neutrals: violet-biased on a white page */
+  --color-paper: #ffffff;
+  --color-panel: #f7f5fa;
+  --color-sunk: #efecf6;
+  --color-ink: #1a1523;
+  --color-muted: #655f73;
+  --color-line: #e3dfec;
+  /* Text on ink (--inv-fg) */
+  --color-inv: #ffffff;
+
+  /* Brand, sampled from the ghost icon */
+  --color-accent: #7c3aed;
+  --color-accent-soft: #efe7ff;
+  --color-brand-ink: #24084f;
+  --color-brand-deep: #3d0f86;
+  --color-brand-bright: #9b5cff;
+  --color-brand-mist: #e4d4ff;
+
+  /* Status: always shown with an icon and a word */
+  --color-ok: #11704f;
+  --color-ok-soft: #e1f4ec;
+  --color-warn: #8a5a00;
+  --color-warn-soft: #fdf1dc;
+  --color-bad: #b3261e;
+  --color-bad-soft: #fde8e6;
+
+  /* Account tints for 9:16 concept frames */
+  --color-t1: #e6defa;
+  --color-t2: #dcefe3;
+  --color-t3: #fbe3d6;
+
+  /* Loaded with next/font in layout.tsx: Onest (UI), Gabarito (headings), Sometype Mono (labels, IDs, counts) */
+  --font-sans: var(--font-onest), system-ui, sans-serif;
+  --font-display: var(--font-gabarito), system-ui, sans-serif;
+  --font-mono: var(--font-sometype), ui-monospace, Menlo, monospace;
+}
+
+:root {
+  /* Design-system names, aliased so shared snippets work in both projects */
+  --brand: var(--color-accent);
+  --brand-soft: var(--color-accent-soft);
+  --signal: var(--color-accent);
+  --signal-soft: var(--color-accent-soft);
+  --inv-bg: var(--color-ink);
+  --inv-fg: var(--color-inv);
+  /* "The veil": landing, sign-up, empty states and the brand page only */
+  --brand-gradient: linear-gradient(160deg, #24084f 0%, #3d0f86 100%);
+  --brand-gradient-light: linear-gradient(135deg, #f3ecff 0%, #e2d4fd 40%, #c4acfb 75%, #a78bfa 100%);
+  --r-ctl: 6px;
+  --r-surf: 10px;
+  --r-icon: 22.5%;
+  --ease: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 body {
@@ -27,6 +72,7 @@ h1,
 h2,
 h3 {
   font-family: var(--font-display);
+  font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1.15;
 }

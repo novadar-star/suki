@@ -1,23 +1,31 @@
 import type { Metadata } from "next";
+import { Gabarito, Onest, Sometype_Mono } from "next/font/google";
 import Link from "next/link";
 import { Sidebar } from "@/components/sidebar";
 import { aiMode } from "@/lib/ai";
 import { storageMode } from "@/lib/db";
 import "./globals.css";
 
+// Same three families and variable names as the landing page, from suki-brand/tokens.css.
+const gabarito = Gabarito({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-gabarito" });
+const onest = Onest({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-onest" });
+const sometype = Sometype_Mono({ subsets: ["latin"], weight: ["400", "500"], style: ["normal", "italic"], variable: "--font-sometype" });
+
 export const metadata: Metadata = {
   title: "Suki",
-  description: "Creative operations studio: from brief to signed-off, brand-safe content for every account, then learn from results.",
+  description: "Suki ghostwrites. You sign. From brief to signed-off, brand-safe content for every account.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${gabarito.variable} ${onest.variable} ${sometype.variable}`}>
       <body>
         <div className="mx-auto flex min-h-screen max-w-[1280px] flex-col md:flex-row">
           <aside className="flex shrink-0 flex-col gap-6 border-line p-4 md:sticky md:top-0 md:h-screen md:w-56 md:border-r md:p-6">
-            <Link href="/campaigns" className="font-display text-2xl font-bold tracking-tight">
-              suki
+            <Link href="/campaigns" className="flex items-center gap-2.5 font-display text-2xl font-semibold tracking-tight">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/suki-icon.png" alt="" width={28} height={28} className="size-7" style={{ borderRadius: "var(--r-icon)" }} />
+              Suki
             </Link>
             <Sidebar />
             <p className="mt-auto hidden text-xs leading-relaxed text-muted md:block">

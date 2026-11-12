@@ -38,8 +38,8 @@ export function ResultsStage() {
       <div className="rounded-xl border border-dashed border-line bg-panel p-8">
         <h2 className="text-xl font-semibold">Nothing to measure yet</h2>
         <p className="mt-1 max-w-lg text-muted">Sign off the deliverables first. Results are added per signed-off concept once it has been posted.</p>
-        <Link href="?stage=review" scroll={false} className="press mt-4 inline-block rounded-md bg-ink px-4 py-2 text-sm font-medium text-white">
-          Go to review
+        <Link href="?stage=signoff" scroll={false} className="press mt-4 inline-block rounded-md bg-ink px-4 py-2 text-sm font-medium text-inv hover:bg-ink/85">
+          Go to sign-off
         </Link>
       </div>
     );
@@ -93,7 +93,7 @@ function ResultsForm({ onDone }: { onDone: () => void }) {
       </div>
 
       {source === "sample" && (
-        <p className="mb-4 rounded-md bg-[#fdf1dc] px-3 py-2 text-sm text-[#8a5a00]">
+        <p className="mb-4 rounded-md bg-warn-soft px-3 py-2 text-sm text-warn">
           Demo data: made-up sample numbers, not real performance. They stay labeled as samples everywhere, including in the next round.
         </p>
       )}

@@ -16,7 +16,7 @@ export default function AccountsPage() {
             style={{ borderTop: `4px solid ${a.color}` }}
           >
             <div className="p-5">
-              <h2 className="text-2xl font-bold">{a.name}</h2>
+              <h2 className="text-2xl font-semibold">{a.name}</h2>
               <p className="text-sm text-muted">
                 {a.handle} on {a.platform}
               </p>

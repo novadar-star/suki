@@ -3,7 +3,7 @@ import clsx from "clsx";
 export function PageHeader({ title, intro }: { title: string; intro?: React.ReactNode }) {
   return (
     <header className="mb-8 max-w-2xl">
-      <h1 className="text-4xl font-bold">{title}</h1>
+      <h1 className="text-4xl font-semibold">{title}</h1>
       {intro && <p className="mt-2 text-muted">{intro}</p>}
     </header>
   );
@@ -17,14 +17,17 @@ export function PanelTitle({ children }: { children: React.ReactNode }) {
   return <h2 className="mb-3 text-lg font-semibold">{children}</h2>;
 }
 
-export function Tag({ children, tone = "plain" }: { children: React.ReactNode; tone?: "plain" | "accent" | "ink" }) {
+export function Tag({ children, tone = "plain" }: { children: React.ReactNode; tone?: "plain" | "accent" | "ink" | "ok" | "warn" | "bad" }) {
   return (
     <span
       className={clsx(
         "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
         tone === "plain" && "border border-line bg-panel text-muted",
         tone === "accent" && "bg-accent-soft text-accent",
-        tone === "ink" && "bg-ink text-white",
+        tone === "ink" && "bg-ink text-inv",
+        tone === "ok" && "bg-ok-soft text-ok",
+        tone === "warn" && "bg-warn-soft text-warn",
+        tone === "bad" && "bg-bad-soft text-bad",
       )}
     >
       {children}

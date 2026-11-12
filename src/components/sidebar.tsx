@@ -24,7 +24,7 @@ export function Sidebar() {
             aria-current={active ? "page" : undefined}
             className={clsx(
               "press rounded-md px-3 py-2 text-sm",
-              active ? "bg-ink text-white" : "text-muted hover:bg-white hover:text-ink",
+              active ? "bg-ink text-inv" : "text-muted hover:bg-panel hover:text-ink",
             )}
           >
             {l.label}

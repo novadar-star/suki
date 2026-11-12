@@ -21,7 +21,7 @@ export function BriefStage() {
         }}
       >
         <BriefFields initial={campaign} />
-        {campaign.signedOffAt && <p className="text-sm text-accent">Changing the objective type reopens the signed-off deliverables.</p>}
+        {campaign.signedOffAt && <p className="text-sm text-warn">Changing the objective type reopens the signed-off deliverables.</p>}
         <div>
           <Button type="submit" busy={busy === "brief"}>
             Save brief

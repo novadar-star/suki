@@ -31,7 +31,7 @@ export function PlaybooksStage() {
           {busy === "playbooks" ? "Writing playbooks" : has ? "Remake all playbooks" : "Make playbooks"}
         </Button>
       </div>
-      {!ready && <p className="mb-6 text-accent">Pick at least one account and one trend first.</p>}
+      {!ready && <p className="mb-6 text-warn">Pick at least one account and one trend first.</p>}
       <div className="grid gap-4 xl:grid-cols-3">
         {campaign.accountIds.map((id) => {
           const p = campaign.playbooks.find((x) => x.accountId === id);
@@ -87,7 +87,7 @@ function PlaybookCard({ p }: { p: Playbook }) {
       <div className="border-b border-line p-5">
         <div className="flex items-start justify-between gap-2">
           <AccountHeader accountId={p.accountId} />
-          {p.status !== "draft" && <Tag tone={p.status === "approved" ? "ink" : "accent"}>{p.status === "approved" ? "Approved" : "Rejected"}</Tag>}
+          {p.status !== "draft" && <Tag tone={p.status === "approved" ? "ok" : "bad"}>{p.status === "approved" ? "Approved" : "Rejected"}</Tag>}
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="font-medium">{trend?.title ?? p.trendId}</span>

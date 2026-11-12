@@ -38,7 +38,7 @@ export function ContentStage() {
         </Button>
         </div>
       </div>
-      {!approved.length && <p className="text-accent">Approve at least one playbook first.</p>}
+      {!approved.length && <p className="text-warn">Approve at least one playbook first.</p>}
 
       <div className="grid gap-6 xl:grid-cols-3">
         {approved.map((p) => {
@@ -94,7 +94,7 @@ function ConceptCard({ c, color, onOpen }: { c: Concept; color: string; onOpen: 
             {angleLabel[c.angleType]}
           </span>
           <Tag>{c.format}</Tag>
-          {c.status !== "draft" && <Tag tone={c.status === "approved" ? "ink" : "accent"}>{c.status === "approved" ? "Approved" : "Rejected"}</Tag>}
+          {c.status !== "draft" && <Tag tone={c.status === "approved" ? "ok" : "bad"}>{c.status === "approved" ? "Approved" : "Rejected"}</Tag>}
         </div>
         <p className="mt-3 font-display text-xl font-semibold leading-snug">&ldquo;{c.hook}&rdquo;</p>
         <code className="mt-1 block font-mono text-[11px] text-muted">{assetId(campaign, c.id)}</code>
@@ -125,7 +125,7 @@ function ConceptCard({ c, color, onOpen }: { c: Concept; color: string; onOpen: 
 export function PhoneFrame({ scene, n, color }: { scene: Concept["scenes"][number]; n: number; color: string }) {
   return (
     <figure className="w-[150px] shrink-0">
-      <div className="relative flex aspect-[9/16] flex-col overflow-hidden rounded-[18px] border-[3px] border-ink bg-ink p-2.5 text-white">
+      <div className="relative flex aspect-[9/16] flex-col overflow-hidden rounded-[18px] border-[3px] border-[#1c1f23] bg-[#1c1f23] p-2.5 text-white">
         <p className="text-[10px] leading-tight text-white/60">{scene.visual}</p>
         <p className="mt-auto rounded-md px-2 py-1.5 text-center text-[13px] font-semibold leading-tight" style={{ background: color }}>
           {scene.onScreen || "No on-screen text"}
@@ -172,7 +172,7 @@ function ConceptDialog({ c, onClose }: { c: Concept; onClose: () => void }) {
       ref={ref}
       onClose={onClose}
       aria-labelledby="concept-title"
-      className="m-auto max-h-[92vh] w-[min(1080px,94vw)] rounded-2xl border border-line bg-panel p-0 text-ink backdrop:bg-ink/40"
+      className="m-auto max-h-[92vh] w-[min(1080px,94vw)] rounded-2xl border border-line bg-panel p-0 text-ink backdrop:bg-black/40"
     >
       <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-line bg-panel p-5">
         <div>
@@ -180,7 +180,7 @@ function ConceptDialog({ c, onClose }: { c: Concept; onClose: () => void }) {
             <span aria-hidden className="size-2.5 rounded-full" style={{ background: a.color }} />
             {a.name}, {angleLabel[c.angleType]}, {c.format}
           </p>
-          <h2 id="concept-title" className="mt-1 text-2xl font-bold">
+          <h2 id="concept-title" className="mt-1 text-2xl font-semibold">
             {c.title}
           </h2>
         </div>
@@ -208,7 +208,7 @@ function ConceptDialog({ c, onClose }: { c: Concept; onClose: () => void }) {
                     const id = brand.claims.find((x) => x.text.toLowerCase() === t.toLowerCase())?.id;
                     return (
                       <li key={t} className="flex gap-2">
-                        <code className={`shrink-0 font-mono text-xs ${id ? "text-ink" : "text-accent"}`}>{id ?? "Not in Brand Brain"}</code>
+                        <code className={`shrink-0 font-mono text-xs ${id ? "text-ink" : "text-bad"}`}>{id ?? "Not in Brand Brain"}</code>
                         <span>{t}</span>
                       </li>
                     );
@@ -228,7 +228,7 @@ function ConceptDialog({ c, onClose }: { c: Concept; onClose: () => void }) {
               role="tab"
               aria-selected={view === v}
               onClick={() => setView(v)}
-              className={clsx("press rounded-md px-3 py-1.5 text-sm", view === v ? "bg-ink text-white" : "text-muted hover:bg-paper")}
+              className={clsx("press rounded-md px-3 py-1.5 text-sm", view === v ? "bg-ink text-inv" : "text-muted hover:bg-paper")}
             >
               {v === "storyboard" ? "Storyboard" : "Video preview"}
             </button>

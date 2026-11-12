@@ -22,7 +22,7 @@ export default async function TrendPage({ params }: { params: Promise<{ id: stri
       </Link>
       <header className="mb-8 mt-3 max-w-2xl">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-4xl font-bold">{t.title}</h1>
+          <h1 className="text-4xl font-semibold">{t.title}</h1>
           <ConfidenceBadge level={level} />
         </div>
         <p className="mt-2 text-muted">{t.description}</p>

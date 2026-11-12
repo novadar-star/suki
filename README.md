@@ -33,11 +33,11 @@ For Supabase, run `supabase/migrations/0001_docs.sql` once in the SQL editor. Re
 ## Demo path
 
 1. Campaigns, then New campaign. Pick **Organic** or **Paid**, then Create campaign.
-2. Trends: pick "Get ready with me".
+2. References: pick "Get ready with me".
 3. Playbooks: Make playbooks, then approve all three.
-4. Content: Make concepts. Open one to see the script, storyboard and video preview.
-5. Review & sign-off: Run portfolio check. It catches 4 problems planted in the sample answers. Press "Rewrite this concept" on each until none are left.
-6. Tick the concepts to produce, then **Sign off**. Sign-off is blocked while any ticked concept has a must-fix problem, on the page and on the server.
+4. Concepts: Make concepts. Open one to see the script, storyboard and video preview.
+5. Review: Run portfolio check. It catches 4 problems planted in the sample answers. Press "Rewrite this concept" on each until none are left.
+6. Sign-off: tick the concepts to produce, then **Sign off**. Sign-off is blocked while any ticked concept has a must-fix problem, on the page and on the server.
 7. Results: each deliverable has an Asset ID (for example `LM-HA4D-DEMO-C01-S01-V1`). Type in real numbers, or press "Fill with sample numbers" (labeled as demo data everywhere). The Analyst only states a pattern when two groups each have 3 or more assets with 1,000 or more views. Otherwise it says "Not enough data" and what is missing. Sign off all nine concepts to see a pattern by account; sign off four to see only data gaps.
 8. Accept or dismiss each draft insight, then **Start round 2**. Only accepted insights go into the next brief and the AI prompt.
 
@@ -70,3 +70,7 @@ Organic and paid are judged differently. Paid adds two must-fix rules: the produ
 - No login. Anyone with the link can edit. Fine for a demo, not for real client work.
 - Brand guidelines are samples written for the demo.
 - The product image is a drawing. Put a real photo at `public/product/serum.svg` or change the path in `src/data/brand.ts`.
+
+## Brand
+
+`suki-brand/` is the shared brand kit (tokens, icon, voice) and the source of truth for the design system. `src/app/globals.css` mirrors its tokens. Violet marks what Suki wrote or is doing. Ink marks a person's decision, so primary buttons, selections and sign-off are ink. Status colors (ok, warn, bad) always come with an icon or a word.
