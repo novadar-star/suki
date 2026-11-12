@@ -23,8 +23,6 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@eslint/js": "^10.0.1",
     "@remotion/bundler": "^4.0.542",
     "@remotion/cli": "^4.0.542",
     "@remotion/renderer": "^4.0.542",
@@ -34,8 +32,6 @@
     "@types/react-dom": "19.3.0",
     "eslint": "9.39.5",
     "eslint-config-next": "16.4.6",
-    "eslint-plugin-react": "^7.37.5",
-    "globals": "^17.14.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5"
