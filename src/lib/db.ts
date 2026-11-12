@@ -12,7 +12,7 @@ const supabase = url && key ? createClient(url, key, { auth: { persistSession: f
 // Without Supabase: a file on your computer, or temporary server storage on Vercel.
 export const storageMode = supabase ? "supabase" : process.env.VERCEL ? "temporary" : "file";
 
-const FILE = process.env.VERCEL ? "/tmp/myrtis-db.json" : path.join(process.cwd(), ".data", "db.json");
+const FILE = process.env.VERCEL ? "/tmp/suki-db.json" : path.join(process.cwd(), ".data", "db.json");
 type FileDb = Record<string, Record<string, unknown>>;
 
 async function readFile(): Promise<FileDb> {

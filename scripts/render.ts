@@ -1,5 +1,5 @@
 // Renders one concept to MP4.
-// Usage: npm run render -- <campaignId> <conceptId>   (the app must be running on port 3000, or set MYRTIS_URL)
+// Usage: npm run render -- <campaignId> <conceptId>   (the app must be running on port 3000, or set SUKI_URL)
 import path from "path";
 import { bundle } from "@remotion/bundler";
 import { renderMedia, selectComposition } from "@remotion/renderer";
@@ -10,7 +10,7 @@ if (!campaignId || !conceptId) {
   console.error("Usage: npm run render -- <campaignId> <conceptId>");
   process.exit(1);
 }
-const base = process.env.MYRTIS_URL ?? "http://localhost:3000";
+const base = process.env.SUKI_URL ?? process.env.MYRTIS_URL ?? "http://localhost:3000";
 const browserExecutable = process.env.CHROME_PATH || null;
 
 (async () => {
