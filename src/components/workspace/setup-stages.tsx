@@ -51,7 +51,7 @@ export function BriefStage() {
           {brand.claims.filter((c) => c.kind === "product_fact").length} product facts and{" "}
           {brand.claims.filter((c) => c.kind === "marketing_claim").length} marketing claims. Every concept may use only these.
         </p>
-        <Link href="/brand" className="mt-3 inline-block text-sm underline underline-offset-2">
+        <Link href={`/brand?id=${encodeURIComponent(brand.id)}`} className="mt-3 inline-block text-sm underline underline-offset-2">
           Open Brand Brain
         </Link>
       </aside>

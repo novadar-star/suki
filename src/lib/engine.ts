@@ -24,7 +24,7 @@ async function selectedTrends(c: Campaign) {
 const newId = () => crypto.randomUUID().slice(0, 8);
 
 export async function makePlaybook(c: Campaign, accountId: string): Promise<Playbook> {
-  const data = await getStudioData();
+  const data = await getStudioData(c.brandId);
   const a = account(data.accounts, accountId);
   const trends = await selectedTrends(c);
   const others = c.playbooks.filter((p) => p.accountId !== accountId && p.status !== "rejected");
@@ -39,7 +39,7 @@ export async function makePlaybook(c: Campaign, accountId: string): Promise<Play
 }
 
 export async function makeConcepts(c: Campaign, accountId: string): Promise<Concept[]> {
-  const data = await getStudioData();
+  const data = await getStudioData(c.brandId);
   const a = account(data.accounts, accountId);
   const p = c.playbooks.find((x) => x.accountId === accountId && x.status === "approved");
   if (!p) throw new EngineError(`Approve the ${a.name} playbook first.`);
@@ -56,7 +56,7 @@ export async function makeConcepts(c: Campaign, accountId: string): Promise<Conc
 export async function remakeConcept(c: Campaign, conceptId: string, findingId?: string): Promise<Concept> {
   const current = c.concepts.find((x) => x.id === conceptId);
   if (!current) throw new EngineError("Concept not found.");
-  const data = await getStudioData();
+  const data = await getStudioData(c.brandId);
   const a = account(data.accounts, current.accountId);
   const trend = (await getTrends()).find((t) => t.id === current.trendId);
   if (!trend) throw new EngineError("The concept's trend no longer exists.");

@@ -4,8 +4,9 @@ import { ruleId } from "@/lib/checks";
 
 export const dynamic = "force-dynamic";
 
-export default async function BrandPage() {
-  const brand = await getBrand();
+export default async function BrandPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+  const { id } = await searchParams;
+  const brand = await getBrand(id?.slice(0, 60));
   const facts = brand.claims.filter((c) => c.kind === "product_fact");
   const marketing = brand.claims.filter((c) => c.kind === "marketing_claim");
   const g = brand.guidelines;
@@ -16,22 +17,31 @@ export default async function BrandPage() {
         title={brand.name}
         intro={
           <>
-            {brand.description} Product details come from the{" "}
-            <a href={brand.sourceUrl} className="underline underline-offset-2" target="_blank" rel="noreferrer">
-              product page
-            </a>
-            , checked on {new Date(brand.checkedOn).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}.
+            {brand.description}{" "}
+            {brand.sourceUrl ? (
+              <>
+                Product details come from the{" "}
+                <a href={brand.sourceUrl} className="underline underline-offset-2" target="_blank" rel="noreferrer">
+                  product page
+                </a>
+                , checked on {new Date(brand.checkedOn).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}.
+              </>
+            ) : (
+              <>Suki drafted this from a brief on {new Date(brand.checkedOn).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}. Check every claim with the client.</>
+            )}
           </>
         }
       />
 
       <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
         <Panel className="p-0 overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={brand.product.image} alt="" className="w-full" />
+          {brand.product.image && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={brand.product.image} alt="" className="w-full" />
+          )}
           <div className="p-5">
             <h2 className="text-xl font-semibold">{brand.product.name}</h2>
-            <p className="mt-1 text-muted">{brand.product.size} · {brand.product.price}</p>
+            <p className="mt-1 text-muted">{[brand.product.size, brand.product.price].filter(Boolean).join(" · ")}</p>
           </div>
         </Panel>
 
@@ -67,7 +77,9 @@ export default async function BrandPage() {
       <Panel className="mt-4">
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <h2 className="text-lg font-semibold">Guidelines</h2>
-          {g.isSample && <Tag tone="warn">Sample for this demo. Replace with the brand&apos;s real guidelines.</Tag>}
+          {g.isSample && (
+            <Tag tone="warn">{brand.sourceUrl ? "Sample for this demo. Replace with the brand's real guidelines." : "Drafted by Suki. Confirm with the client."}</Tag>
+          )}
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <div>
@@ -80,7 +92,7 @@ export default async function BrandPage() {
           </div>
           <div>
             <h3 className="mb-2 text-sm font-semibold">Required disclaimers</h3>
-            <IdList items={g.disclaimers.map((text, i) => ({ id: ruleId("D", i), text }))} />
+            {g.disclaimers.length ? <IdList items={g.disclaimers.map((text, i) => ({ id: ruleId("D", i), text }))} /> : <p className="text-muted">None</p>}
           </div>
           <div>
             <h3 className="mb-2 text-sm font-semibold">Restrictions</h3>

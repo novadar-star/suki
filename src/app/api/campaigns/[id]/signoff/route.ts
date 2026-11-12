@@ -15,7 +15,7 @@ export async function POST(_req: Request, { params }: Ctx) {
     if (!c) return notFound("Campaign");
     const approved = deliverables(c);
     if (!approved.length) return NextResponse.json({ error: "Approve at least one concept first." }, { status: 422 });
-    const report = runChecks(c.concepts, c.objectiveType, await getStudioData());
+    const report = runChecks(c.concepts, c.objectiveType, await getStudioData(c.brandId));
     const blocking = report.findings.filter((f) => f.severity === "fix" && f.conceptIds.some((x) => approved.some((a) => a.id === x)));
     if (blocking.length)
       return NextResponse.json({ error: `${blocking.length} must-fix problem${blocking.length === 1 ? "" : "s"} on approved concepts. Fix them first.` }, { status: 422 });

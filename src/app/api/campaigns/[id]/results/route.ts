@@ -18,7 +18,7 @@ export async function POST(req: Request, { params }: Ctx) {
     if (!rows.length) return NextResponse.json({ error: "No results match the signed-off deliverables." }, { status: 422 });
     const next = { ...c, results: { ...input, rows, enteredAt: new Date().toISOString() } };
     // The Analyst drafts insights. A person accepts or dismisses each one.
-    return NextResponse.json(await saveCampaign({ ...next, insights: analyze(next, (await getStudioData()).accounts).insights }));
+    return NextResponse.json(await saveCampaign({ ...next, insights: analyze(next, (await getStudioData(next.brandId)).accounts).insights }));
   } catch (e) {
     return fail(e);
   }

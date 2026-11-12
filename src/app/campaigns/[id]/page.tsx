@@ -13,8 +13,9 @@ export default async function CampaignPage({
   searchParams: Promise<{ stage?: string }>;
 }) {
   const [{ id }, { stage }] = await Promise.all([params, searchParams]);
-  const [campaign, trends, data] = await Promise.all([getCampaign(id), getTrends(), getStudioData()]);
+  const [campaign, trends] = await Promise.all([getCampaign(id), getTrends()]);
   if (!campaign) notFound();
+  const data = await getStudioData(campaign.brandId);
   return (
     <Workspace
       initial={campaign}
